@@ -11,10 +11,16 @@ struct Singleton
 {
 protected:
     template<typename... Dependencies>
-    constexpr Type& do_resolve(Pack<Type> keys, std::tuple<Dependencies...>& dependencies) const
+    Type& do_resolve(Pack<Type> keys, std::tuple<Dependencies...>& dependencies) const
     {
         static Type instance = std::apply(Type::create, dependencies);
         return instance;
+    }
+
+    template<typename... Dependencies>
+    const Type& do_resolve(Pack<const Type> keys, std::tuple<Dependencies...>& dependencies) const
+    {
+        return this->do_resolve(Pack<Type>{}, dependencies);
     }
 };
 

@@ -8,6 +8,8 @@
 
 #include <tuple>
 
+#include <iostream>
+
 namespace capy::di
 {
 
@@ -22,6 +24,8 @@ private:
 
     template<typename T>
     using dependencies_of_t = ParamPackOf<decltype(T::create)>;
+
+    // TODO: check if Type::create function returns value of Type
     
 public:
     constexpr explicit DI(Configs&&... configs) 

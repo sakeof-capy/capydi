@@ -1,5 +1,8 @@
 #include <iostream>
 
+struct A;
+struct B;
+
 #include "utilities/PackAlgorithm.hpp"
 #include "configs/Singleton.hpp"
 #include "Container.hpp"
@@ -40,30 +43,67 @@ std::cout << "Hello, World!\n" << std::flush;
 */
 
 struct A { 
-    int inner = 10; 
+    int inner = 10;
+
     constexpr static A create() {
         return A{};
+    }
+
+    constexpr void modify(int new_inner)
+    {
+        this->inner = new_inner;
     }
 };
 struct B { 
     int inner = 12; 
+
     constexpr static B create() {
         return B{};
+    }
+
+    constexpr void modify(int new_inner)
+    {
+        this->inner = new_inner;
     }
 };
 
 struct C
 {
     A& a_;
-    B& b_;
+    const B& b_;
 
-    constexpr C(A& a, B& b)
+    constexpr C(A& a, const B& b)
         : a_(a), b_(b)
     {}
 
-    constexpr static C create(A& a, B& b)
+    constexpr static C create(A& a, const B& b)
     {
-        return C (a, b);
+        return C(a, b);
+    }
+
+    constexpr void do_job()
+    {
+        this->a_.modify(133);
+    }
+};
+
+struct D
+{
+    const A& a_;
+    B& b_;
+
+    constexpr D(const A& a, B& b)
+        : a_(a), b_(b)
+    {}
+
+    constexpr static D create(const A& a, B& b)
+    {
+        return D (a, b);
+    }
+
+    constexpr void do_job()
+    {
+        this->b_.modify(134);
     }
 };
 
@@ -73,6 +113,7 @@ int main()
         Singleton<A>{},
         Singleton<B>{},
         Singleton<C>{},
+        Singleton<D>{},
     };
 
     A& ref_a = container.resolve<A>();
@@ -82,7 +123,14 @@ int main()
     std::cout << "resolved B = " << ref_b.inner << std::endl;
 
     C& ref_c = container.resolve<C>();
-    std::cout << "resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
+    std::cout << "1. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
+    ref_c.do_job();
+    std::cout << "2. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
+    
+    D& ref_d = container.resolve<D>();
+    std::cout << "1. resolved D = " << ref_d.a_.inner << ", " << ref_d.b_.inner << std::endl;
+    ref_d.do_job();
+    std::cout << "2. resolved D = " << ref_d.a_.inner << ", " << ref_d.b_.inner << std::endl;
 
     return EXIT_SUCCESS;
 }
