@@ -4,7 +4,9 @@ struct A;
 struct B;
 
 #include "utilities/PackAlgorithm.hpp"
+#include "utilities/referencing/Reference.hpp"
 #include "configs/Singleton.hpp"
+#include "configs/Constleton.hpp"
 #include "Container.hpp"
 
 using namespace capy::di;
@@ -18,29 +20,6 @@ void print_tuple(const std::tuple<Ts...>& t) {
     }, t);
     std::cout << ")";
 }
-
-/*
-### valued_pack_for test:
-
-std::cout << "Hello, World!\n" << std::flush;
-
-    auto lam = []<typename T>(Unit<T>) -> T {
-        std::cout << "PRINTING: " << typeid(T).name() << std::endl;
-        return T{} + 1;
-    };
-
-    // using a = std::invoke_result_t<decltype(lam), Unit<int>>;
-
-
-    using to_test = hidden__::valued_pack_for_result<decltype(lam), int, long long, double, float>;
-
-    auto tup = valued_pack_for(Pack<int, double, float>{}, std::move(lam));
-
-    std::cout << "___________________________________" << std::endl;
-
-    // std::cout << typeid(a).name() << std::endl;
-    print_tuple(tup);
-*/
 
 struct A { 
     int inner = 10;
@@ -69,58 +48,135 @@ struct B {
 
 struct C
 {
-    A& a_;
+    const A& a_;
     const B& b_;
+    int inner_ = 321;
 
-    constexpr C(A& a, const B& b)
+    constexpr C(const A& a, const B& b)
         : a_(a), b_(b)
     {}
 
-    constexpr static C create(A& a, const B& b)
+    constexpr static C create(const A& a, const B& b)
     {
         return C(a, b);
     }
 
-    constexpr void do_job()
+    void do_job()
     {
-        this->a_.modify(133);
+        this->inner_ = this->inner_ == 321 ? 123 : 321;
+        std::cout 
+            << "Const: a = " << this->a_.inner 
+            << "; b = " << this->b_.inner 
+            << "; inner = " << this->inner_
+            << "." << std::endl;
+    }
+};
+
+struct Const
+{
+    const A& a_;
+    const B& b_;
+
+    constexpr Const(const A& a, const B& b)
+        : a_(a), b_(b)
+    {}
+
+    constexpr static Const create(const A& a, const B& b)
+    {
+        return Const (a, b);
+    }
+
+    constexpr void do_job() const
+    {
+        std::cout << "Const: a = " << this->a_.inner << "; b = " << this->b_.inner << "." << std::endl;
     }
 };
 
 struct D
 {
     const A& a_;
-    B& b_;
+    C& c_;
 
-    constexpr D(const A& a, B& b)
-        : a_(a), b_(b)
+    constexpr D(const A& a, C& c)
+        : a_(a), c_(c)
     {}
 
-    constexpr static D create(const A& a, B& b)
+    constexpr static D create(const A& a, C& c)
     {
-        return D (a, b);
+        return D (a, c);
     }
 
     constexpr void do_job()
     {
-        this->b_.modify(134);
+        std::cout << "D: a = " << this->a_.inner
+            << " c.inner = " << this->c_.inner_;
+
+        std::cout << "D::c.do_job:\n";
+        this->c_.do_job();
+        std::cout << "D: end <====" << std::endl;
     }
 };
 
+template<typename Pointer_, typename Pointee>
+concept IsPointer = std::convertible_to<Pointer_, const Pointee*>;
+
+
+template<typename Reference_, typename Referent>
+concept IsReference = std::convertible_to<Reference_, const Referent&>;
+
+
+template<typename T, const T& Ref>
+struct CPR 
+{
+public:
+    constexpr operator const T&() const noexcept
+    {
+        return Ref;
+    }
+};
+
+constexpr auto make_int()
+{
+    static constexpr int a = 2;
+    return CPR<int, a>{};
+}
+
 int main() 
 {
-    DI container {
-        Singleton<A>{},
-        Singleton<B>{},
+    // static constexpr int a = 1;
+    // using ptr = int*;
+    // using ref = decltype(*&a);
+    // using cpr = CPR<int, a>;
+    // auto another_int_cpr = make_int();
+    // static_assert(IsPointer<ptr, int>);
+    // static_assert(IsReference<ref, int>);
+    // static_assert(IsReference<cpr, int>);
+    // static_assert(IsReference<decltype(another_int_cpr), int>);
+    // // static_assert(IsReference<RuntimeRef<int>, int>);
+    // int b = 3;
+    // RuntimeRef<const int> rref = b;
+    // // int& rrefc = rref;
+    // const int& crrefc = rref;
+    // static_assert(IsReference<RuntimeRef<const int>, int>);
+
+    static constexpr DI container {
+        Constleton<A>{},
+        Constleton<B>{},
+        Constleton<Const>{},
         Singleton<C>{},
         Singleton<D>{},
     };
 
-    A& ref_a = container.resolve<A>();
+    static constexpr const A& ref_a = container.resolve<const A>();
     std::cout << "resolved A = " << ref_a.inner << std::endl;
     
-    B& ref_b = container.resolve<B>();
+    static constexpr const B& ref_b = container.resolve<const B>();
     std::cout << "resolved B = " << ref_b.inner << std::endl;
+
+    static constexpr const Const& ref_const = container.resolve<const Const>();
+    std::cout << "1. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
+    ref_const.do_job();
+    std::cout << "2. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
 
     C& ref_c = container.resolve<C>();
     std::cout << "1. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
@@ -128,9 +184,7 @@ int main()
     std::cout << "2. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
     
     D& ref_d = container.resolve<D>();
-    std::cout << "1. resolved D = " << ref_d.a_.inner << ", " << ref_d.b_.inner << std::endl;
     ref_d.do_job();
-    std::cout << "2. resolved D = " << ref_d.a_.inner << ", " << ref_d.b_.inner << std::endl;
 
     return EXIT_SUCCESS;
 }
@@ -168,3 +222,18 @@ int main()
 //     combo.method(TypeId<BB>{});
 //     return 0;
 // }
+
+/*
+
+capy::di::valued_pack_for(Pack<Elements ...>&&, Handler&&) 
+[
+    with 
+        Handler = ...; PackElements = {const A&, const B&}; 
+        hidden__::valued_pack_for_result<Handler, PackElements ...> = std::tuple<
+            ConstexprRef<A, instance>, 
+            ConstexprRef<B, instance> 
+        >
+]
+    (<lambda closure object>capy::di::DI<capy::di::Constleton<A>, capy::di::Constleton<B>, capy::di::Constleton<Const> >::resolve<const Const>() const::<lambda(capy::di::Unit<T&>)>{((const capy::di::DI<capy::di::Constleton<A>, capy::di::Constleton<B>, capy::di::Constleton<Const> >*)this)})
+
+*/

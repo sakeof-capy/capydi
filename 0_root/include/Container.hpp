@@ -5,10 +5,9 @@
 #include "utilities/None.hpp"
 #include "utilities/PackAlgorithm.hpp"
 #include "utilities/FunctionTraits.hpp"
+#include "utilities/referencing/Reference.hpp"
 
 #include <tuple>
-
-#include <iostream>
 
 namespace capy::di
 {
@@ -34,17 +33,23 @@ public:
 
 public:
     template<Creatable Type>
-    constexpr Type& resolve() const
+    constexpr Reference<Type> auto resolve() const
     {
         using /* Pack<?> */ KeyPack = Pack<Type>;
         using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
 
-        rebind_pack_t<Dependencies, std::tuple> resolved_dependencies = valued_pack_for(
+        auto resolved_dependencies = valued_pack_for(
             Dependencies{},
-            [this]<typename T>(Unit<T&>) -> T& {
+
+            // TODO: provide a separate DependenciesResolver entity
+            //       to handle different types of arguments (e.g. std::shared_ptr)
+            [this]<typename T>(Unit<T&>) {
                 return this->resolve<std::remove_reference_t<T>>();
             }
         ); 
+
+        // using a = decltype(this->do_resolve(KeyPack{}, resolved_dependencies));
+        // static_assert(std::is_same_v<a, int>, "asdpfkaspodfpas00");
 
         return this->do_resolve(KeyPack{}, resolved_dependencies);
     }

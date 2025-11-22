@@ -41,7 +41,7 @@ namespace hidden__
     ) {
         auto next_accumulated_result = std::tuple_cat(
             std::forward<AccumulatedResult>(accumulated_result), 
-            std::tuple<Head> { std::invoke(handler, Unit<Head>{}) }
+            std::tuple { std::invoke(handler, Unit<Head>{}) }
         );
 
         return valued_pack_for_utility__(
