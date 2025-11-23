@@ -17,5 +17,5 @@ target_include_directories(${EXECUTABLE_NAME}
 )
 
 target_include_directories(${LIBRARY_NAME} 
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/${EXECUTABLE_NAME}
 )

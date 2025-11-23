@@ -1,8 +1,8 @@
 #ifndef CONSTLETON_HPP_
 #define CONSTLETON_HPP_
 
-#include "utilities/Pack.hpp"
-#include "utilities/PackAlgorithm.hpp"
+#include "utilities/pack/Pack.hpp"
+#include "utilities/pack/PackAlgorithm.hpp"
 #include "utilities/referencing/ConstexprRef.hpp"
 #include "utilities/referencing/Reference.hpp"
 

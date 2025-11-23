@@ -1,10 +1,9 @@
 #ifndef CONTAINER_HPP_
 #define CONTAINER_HPP_
 
-#include "utilities/Pack.hpp"
-#include "utilities/None.hpp"
-#include "utilities/PackAlgorithm.hpp"
-#include "utilities/FunctionTraits.hpp"
+#include "utilities/pack/Pack.hpp"
+#include "utilities/pack/PackAlgorithm.hpp"
+#include "utilities/pack/FunctionTraits.hpp"
 #include "utilities/referencing/Reference.hpp"
 
 #include <tuple>

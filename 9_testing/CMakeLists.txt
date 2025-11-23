@@ -5,7 +5,10 @@ file(GLOB_RECURSE HEADERS include/*.hpp)
 
 add_executable(${LIBRARY_NAME} ${HEADERS} ${SOURCES})
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(${LIBRARY_NAME} PRIVATE 
+    Catch2::Catch2WithMain 
+    capydi_lib
+)
 
 target_include_directories(${LIBRARY_NAME}
     PUBLIC

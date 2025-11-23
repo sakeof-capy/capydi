@@ -3,10 +3,10 @@
 struct A;
 struct B;
 
-#include "utilities/PackAlgorithm.hpp"
+#include "utilities/pack/PackAlgorithm.hpp"
 #include "utilities/referencing/Reference.hpp"
-#include "configs/Singleton.hpp"
-#include "configs/Constleton.hpp"
+#include "configs/creational/Singleton.hpp"
+#include "configs/creational/Constleton.hpp"
 #include "Container.hpp"
 
 using namespace capy::di;
