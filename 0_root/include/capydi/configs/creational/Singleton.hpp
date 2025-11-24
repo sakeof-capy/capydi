@@ -3,15 +3,26 @@
 
 #include "utilities/pack/Pack.hpp"
 #include "utilities/referencing/RuntimeRef.hpp"
+#include "configs/decorative/DecoratableConfig.hpp"
 #include <tuple>
 
 namespace capy::di
 {
 
 template<typename Type>
-struct Singleton
+struct Singleton 
+    : DecoratableConfig<
+        Singleton<Type>
+    >
 {
-protected:
+public:
+    using CentralType = Type;
+    using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
+        Pack<Type>, 
+        Pack<const Type>
+    >;
+
+public:
     template<typename... Dependencies>
     RuntimeRef<Type> do_resolve(Pack<Type> keys, std::tuple<Dependencies...>& dependencies) const
     {

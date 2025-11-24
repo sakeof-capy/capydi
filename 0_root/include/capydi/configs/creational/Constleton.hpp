@@ -17,10 +17,13 @@ namespace capy::di
 
 template<typename Type>
 struct Constleton
+    : DecoratableConfig<
+        Singleton<Type>
+    >
 {
 // TODO: check for well-formness of Constleton (if it is constexpr)
 
-protected:
+public:
     template<typename... Dependencies>
     constexpr Reference<Type> auto
         do_resolve(
@@ -35,4 +38,4 @@ protected:
 
 }
 
-#endif // !SINGLETON_HPP
+#endif // !CONSTLETON_HPP_

@@ -7,6 +7,7 @@ struct B;
 #include "utilities/referencing/Reference.hpp"
 #include "configs/creational/Singleton.hpp"
 #include "configs/creational/Constleton.hpp"
+#include "configs/decorative/Tag.hpp"
 #include "Container.hpp"
 
 using namespace capy::di;
@@ -160,7 +161,11 @@ int main()
     // static_assert(IsReference<RuntimeRef<const int>, int>);
 
     static constexpr DI container {
-        Constleton<A>{},
+        Constleton<A>
+            ::with<Tag<2>>
+            // ::with< Interface<>         >
+            // ::with< ConstructionArgs<>  >
+        {},
         Constleton<B>{},
         Constleton<Const>{},
         Singleton<C>{},

@@ -21,7 +21,7 @@ private:
     using Configs::do_resolve...;
 
     template<typename T>
-    using dependencies_of_t = ParamPackOf<decltype(T::create)>;
+    using dependencies_of_t = args_pack_t<decltype(T::create)>;
 
     // TODO: check if Type::create function returns value of Type
     
@@ -31,11 +31,14 @@ public:
     {}
 
 public:
-    template<Creatable Type>
+    template<Creatable Type, typename... Keys>
     constexpr Reference<Type> auto resolve() const
     {
-        using /* Pack<?> */ KeyPack = Pack<Type>;
+        using /* Pack<?> */ KeyPack = Pack<Type, Keys...>;
         using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
+
+        // TODO: provide a static assert to check if do_resolve 
+        //       can exists
 
         auto resolved_dependencies = valued_pack_for(
             Dependencies{},
@@ -46,9 +49,6 @@ public:
                 return this->resolve<std::remove_reference_t<T>>();
             }
         ); 
-
-        // using a = decltype(this->do_resolve(KeyPack{}, resolved_dependencies));
-        // static_assert(std::is_same_v<a, int>, "asdpfkaspodfpas00");
 
         return this->do_resolve(KeyPack{}, resolved_dependencies);
     }
