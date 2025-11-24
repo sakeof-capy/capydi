@@ -18,10 +18,16 @@ namespace capy::di
 template<typename Type>
 struct Constleton
     : DecoratableConfig<
-        Singleton<Type>
+        Constleton<Type>
     >
 {
 // TODO: check for well-formness of Constleton (if it is constexpr)
+
+public:
+    using CentralType = Type;
+    using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
+        Pack<const Type>
+    >;
 
 public:
     template<typename... Dependencies>

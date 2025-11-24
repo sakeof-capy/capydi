@@ -172,24 +172,24 @@ int main()
         Singleton<D>{},
     };
 
-    static constexpr const A& ref_a = container.resolve<const A>();
+    static constexpr const A& ref_a = container.resolve<const A, TagKey<2>>();
     std::cout << "resolved A = " << ref_a.inner << std::endl;
     
     static constexpr const B& ref_b = container.resolve<const B>();
     std::cout << "resolved B = " << ref_b.inner << std::endl;
 
-    static constexpr const Const& ref_const = container.resolve<const Const>();
-    std::cout << "1. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
-    ref_const.do_job();
-    std::cout << "2. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
+    // static constexpr const Const& ref_const = container.resolve<const Const>();
+    // std::cout << "1. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
+    // ref_const.do_job();
+    // std::cout << "2. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
 
-    C& ref_c = container.resolve<C>();
-    std::cout << "1. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
-    ref_c.do_job();
-    std::cout << "2. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
+    // C& ref_c = container.resolve<C>();
+    // std::cout << "1. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
+    // ref_c.do_job();
+    // std::cout << "2. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
     
-    D& ref_d = container.resolve<D>();
-    ref_d.do_job();
+    // D& ref_d = container.resolve<D>();
+    // ref_d.do_job();
 
     return EXIT_SUCCESS;
 }
