@@ -13,7 +13,7 @@ configure:
 	@cmake -S $(SRC_DIR) -B $(BUILD_DIR)
 
 run: configure
-	$(call cmake_build,run_target)
+	$(call cmake_build,capydi)
 	@$(BUILD_DIR)/0_root/capydi
 
 test: configure
