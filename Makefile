@@ -1,21 +1,26 @@
 BUILD_DIR := build
 SRC_DIR := .
+JOBS := $(shell nproc)
 
-all: configure build
+define cmake_build
+	@cmake --build $(BUILD_DIR) --target $(1) -j $(JOBS)
+endef
+
+all: configure
+	$(call cmake_build,all)
 
 configure:
 	@cmake -S $(SRC_DIR) -B $(BUILD_DIR)
 
-build:
-	@cmake --build $(BUILD_DIR) -j $(shell nproc)
-
-run: all
+run: configure
+	$(call cmake_build,run_target)
 	@$(BUILD_DIR)/0_root/capydi
 
-test: all
+test: configure
+	$(call cmake_build,testing)
 	@$(BUILD_DIR)/9_testing/testing
 
 clean:
 	@rm -rf $(BUILD_DIR)
 
-.PHONY: all configure build run clean
+.PHONY: all configure run test clean
