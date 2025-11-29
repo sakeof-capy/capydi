@@ -144,22 +144,6 @@ constexpr auto make_int()
 
 int main() 
 {
-    // static constexpr int a = 1;
-    // using ptr = int*;
-    // using ref = decltype(*&a);
-    // using cpr = CPR<int, a>;
-    // auto another_int_cpr = make_int();
-    // static_assert(IsPointer<ptr, int>);
-    // static_assert(IsReference<ref, int>);
-    // static_assert(IsReference<cpr, int>);
-    // static_assert(IsReference<decltype(another_int_cpr), int>);
-    // // static_assert(IsReference<RuntimeRef<int>, int>);
-    // int b = 3;
-    // RuntimeRef<const int> rref = b;
-    // // int& rrefc = rref;
-    // const int& crrefc = rref;
-    // static_assert(IsReference<RuntimeRef<const int>, int>);
-
     static constexpr DI container {
         Constleton<A>
             ::with<Tag<2>>
@@ -177,6 +161,12 @@ int main()
     
     static constexpr const B& ref_b = container.resolve<const B>();
     std::cout << "resolved B = " << ref_b.inner << std::endl;
+
+    /**
+     * 
+     * draw diagrams
+     * prepare for presentation
+     */
 
     // static constexpr const Const& ref_const = container.resolve<const Const>();
     // std::cout << "1. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
