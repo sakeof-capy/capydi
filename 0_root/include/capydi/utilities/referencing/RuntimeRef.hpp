@@ -23,9 +23,14 @@ public:
         return ref_;
     }
 
-    constexpr operator const T&() const noexcept requires (IS_CONST)
+    constexpr operator const T&() const noexcept
     {
         return ref_;
+    }
+
+    constexpr operator RuntimeRef<const T>() const noexcept
+    {
+        return RuntimeRef<const T> { ref_ };
     }
 
 private:
