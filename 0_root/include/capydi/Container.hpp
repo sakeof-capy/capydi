@@ -5,23 +5,15 @@
 #include "utilities/pack/PackAlgorithm.hpp"
 #include "utilities/pack/FunctionTraits.hpp"
 #include "utilities/referencing/Reference.hpp"
-
 #include "utilities/referencing/RuntimeRef.hpp"
+#include "Error.hpp"
+#include "Resolution.hpp"
 
 #include <expected>
 #include <tuple>
 
 namespace capy::di
 {
-
-enum class DiError
-{
-    CANNOT_BE_RESOLVED,
-    DEPENDENCY_CANNOT_BE_RESOLVED,
-};
-
-template<typename T, typename Dependency>
-concept ResolutionResult = true; /* std::expected<Reference<Type>, DiError> */
 
 template<typename T>
 concept Creatable = create_static_method_exists_and_is_unique_v<T>;
@@ -44,13 +36,13 @@ public:
 
 public:
     template<Creatable Type, typename... Keys>
-    constexpr ResolutionResult<Type> auto resolve() const
+    constexpr Resolution<Type> auto resolve() const
     {
         using /* Pack<?> */ KeyPack = Pack<Type, Keys...>;
         using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
 
-        auto error = [](DiError error_code) {
-            return std::expected<RuntimeRef<Type>, DiError> { 
+        auto error = [](Error error_code) {
+            return std::expected<RuntimeRef<Type>, Error> {  // TODO: replace RuntimeRef
                 std::unexpected { error_code } 
             };
         };
@@ -60,14 +52,14 @@ public:
 
             // TODO: provide a separate DependenciesResolver entity
             //       to handle different types of arguments (e.g. std::shared_ptr)
-            [this]<typename T>(Unit<T&>) /* -> std::expected<Reference<Type>, DiError> */ {
+            [this]<typename T>(Unit<T&>) /* -> std::expected<Reference<Type>, Error> */ {
                 return this->resolve<std::remove_reference_t<T>>();
             }
         ); 
 
         if (!resolved_dependencies_result.has_value()) [[unlikely]]
         {
-            return error(DiError::DEPENDENCY_CANNOT_BE_RESOLVED);
+            return error(Error::DEPENDENCY_CANNOT_BE_RESOLVED);
         }
 
         auto resolved_dependencies = resolved_dependencies_result.value();
@@ -78,18 +70,13 @@ public:
         if constexpr (requires { RESOLUTION_CALL; }) 
         {   
             using ReturnValue = decltype(RESOLUTION_CALL);
-            return std::expected<ReturnValue, DiError> { RESOLUTION_CALL };
+            return std::expected<ReturnValue, Error> { RESOLUTION_CALL };
         } 
         else 
         {
-            return error(DiError::CANNOT_BE_RESOLVED);
+            return error(Error::CANNOT_BE_RESOLVED);
         }
     }
-
-    // template<typename Type, typename... Keys>
-    // constexpr auto resolve() const
-    // {
-    // }
 };
 
 }

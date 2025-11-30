@@ -142,93 +142,29 @@ constexpr auto make_int()
     return CPR<int, a>{};
 }
 
+#include "Resolution.hpp"
+
 int main() 
 {
-    static constexpr DI container {
-        Constleton<A>
-            ::with<Tag<2>>
-            // ::with< Interface<>         >
-            // ::with< ConstructionArgs<>  >
-        {},
-        Constleton<B>{},
-        Constleton<Const>{},
-        Singleton<C>{},
-        Singleton<D>{},
-    };
+    using Type = std::expected<int, double>;
+    static_assert(hidden__::is_wrapped_with_expected<Type>, "FAILURE");
+    // static constexpr DI container {
+    //     Constleton<A>
+    //         ::with<Tag<2>>
+    //         // ::with< Interface<>         >
+    //         // ::with< ConstructionArgs<>  >
+    //     {},
+    //     Constleton<B>{},
+    //     Constleton<Const>{},
+    //     Singleton<C>{},
+    //     Singleton<D>{},
+    // };
 
-    static constexpr const A& ref_a = container.resolve<const A, TagKey<2>>();
-    std::cout << "resolved A = " << ref_a.inner << std::endl;
+    // static constexpr const A& ref_a = container.resolve<const A, TagKey<2>>();
+    // std::cout << "resolved A = " << ref_a.inner << std::endl;
     
-    static constexpr const B& ref_b = container.resolve<const B>();
-    std::cout << "resolved B = " << ref_b.inner << std::endl;
-
-    /**
-     * 
-     * draw diagrams
-     * prepare for presentation
-     */
-
-    // static constexpr const Const& ref_const = container.resolve<const Const>();
-    // std::cout << "1. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
-    // ref_const.do_job();
-    // std::cout << "2. resolved Const = " << ref_const.a_.inner << ", " << ref_const.b_.inner << std::endl;
-
-    // C& ref_c = container.resolve<C>();
-    // std::cout << "1. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
-    // ref_c.do_job();
-    // std::cout << "2. resolved C = " << ref_c.a_.inner << ", " << ref_c.b_.inner << std::endl;
-    
-    // D& ref_d = container.resolve<D>();
-    // ref_d.do_job();
+    // static constexpr const B& ref_b = container.resolve<const B>();
+    // std::cout << "resolved B = " << ref_b.inner << std::endl;
 
     return EXIT_SUCCESS;
 }
-
-// #include <iostream>
-
-// template<typename T>
-// struct TypeId {};
-
-// struct AA
-// {
-//     void method(TypeId<AA> a)
-//     {
-//         std::cout << "Method AA" << std::endl;
-//     }
-// };
-
-// struct BB
-// {
-//     void method(TypeId<BB> a)
-//     {
-//         std::cout << "Method BB" << std::endl;
-//     }
-// };
-
-// struct Combo: AA, BB
-// {
-//     using AA::method;
-//     using BB::method;
-// };
-
-// int main()
-// {
-//     Combo combo{};
-//     combo.method(TypeId<BB>{});
-//     return 0;
-// }
-
-/*
-
-capy::di::valued_pack_for(Pack<Elements ...>&&, Handler&&) 
-[
-    with 
-        Handler = ...; PackElements = {const A&, const B&}; 
-        hidden__::valued_pack_for_result<Handler, PackElements ...> = std::tuple<
-            ConstexprRef<A, instance>, 
-            ConstexprRef<B, instance> 
-        >
-]
-    (<lambda closure object>capy::di::DI<capy::di::Constleton<A>, capy::di::Constleton<B>, capy::di::Constleton<Const> >::resolve<const Const>() const::<lambda(capy::di::Unit<T&>)>{((const capy::di::DI<capy::di::Constleton<A>, capy::di::Constleton<B>, capy::di::Constleton<Const> >*)this)})
-
-*/

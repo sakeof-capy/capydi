@@ -6,8 +6,8 @@
 #include "hierarchies/SpineLeaf3.hpp"
 
 using capy::di::DI;
-using capy::di::DiError;
-using capy::di::ResolutionResult;
+using capy::di::Error;
+using capy::di::Resolution;
 using capy::di::Singleton;
 
 TEST_CASE("singleton:spine_leaf_3") {
@@ -109,13 +109,13 @@ TEST_CASE("singleton/error_handling:spine_leaf_3") {
             // Singleton<Leaf1>{},
         };
 
-        ResolutionResult<Leaf1> 
+        Resolution<Leaf1> 
             auto leaf1_resolution_result = container.resolve<Leaf1>(); 
 
         REQUIRE(!leaf1_resolution_result.has_value());
         REQUIRE(
             leaf1_resolution_result.error() 
-            == DiError::CANNOT_BE_RESOLVED
+            == Error::CANNOT_BE_RESOLVED
         );
     }
 
@@ -127,11 +127,11 @@ TEST_CASE("singleton/error_handling:spine_leaf_3") {
             Singleton<Spine1>{}
         };
 
-        ResolutionResult<Leaf1> 
+        Resolution<Leaf1> 
             auto leaf1_resolution_result = container.resolve<Leaf1>(); 
 
         REQUIRE(!leaf1_resolution_result.has_value());
-        REQUIRE(leaf1_resolution_result.error() == DiError::CANNOT_BE_RESOLVED);
+        REQUIRE(leaf1_resolution_result.error() == Error::CANNOT_BE_RESOLVED);
     }
 
     SECTION("absent_leaf_dependency_resolution_height2")
@@ -144,13 +144,13 @@ TEST_CASE("singleton/error_handling:spine_leaf_3") {
             Singleton<RootSpine>{},
         };
 
-        ResolutionResult<RootSpine> 
+        Resolution<RootSpine> 
             auto root_spine_resolution_result = container.resolve<RootSpine>(); 
 
         REQUIRE(!root_spine_resolution_result.has_value());
         REQUIRE(
             root_spine_resolution_result.error() 
-            == DiError::DEPENDENCY_CANNOT_BE_RESOLVED
+            == Error::DEPENDENCY_CANNOT_BE_RESOLVED
         );
     }
 
@@ -164,13 +164,13 @@ TEST_CASE("singleton/error_handling:spine_leaf_3") {
             Singleton<RootSpine>{},
         };
 
-        ResolutionResult<RootSpine> 
+        Resolution<RootSpine> 
             auto root_spine_resolution_result = container.resolve<RootSpine>(); 
 
         REQUIRE(!root_spine_resolution_result.has_value());
         REQUIRE(
             root_spine_resolution_result.error() 
-            == DiError::DEPENDENCY_CANNOT_BE_RESOLVED
+            == Error::DEPENDENCY_CANNOT_BE_RESOLVED
         );
     }
 }
