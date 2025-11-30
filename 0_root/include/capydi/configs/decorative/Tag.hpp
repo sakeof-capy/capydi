@@ -4,7 +4,6 @@
 #include "configs/concepts/CreationalConfig.hpp"
 #include "utilities/pack/Append.hpp"
 #include "utilities/referencing/Reference.hpp"
-#include "utilities/SelfType.hpp"
 #include <cstddef>
 
 namespace capy::di

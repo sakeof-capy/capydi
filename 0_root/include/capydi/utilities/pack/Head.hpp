@@ -13,7 +13,7 @@ struct Head;
 template<typename Head_, typename... Tail>
 struct Head<Pack<Head_, Tail...>>
 {
-    using type = Head;
+    using type = Head_;
 };
 
 template<>
