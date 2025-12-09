@@ -86,7 +86,7 @@ namespace hidden__
 
 
     template<std::size_t... Idx, typename... Configs>
-    constexpr auto
+    [[nodiscard]] constexpr auto
         extract_config_tuple(
             Pack<ValueUnit<Idx>...>&&, 
             Configs&... configs

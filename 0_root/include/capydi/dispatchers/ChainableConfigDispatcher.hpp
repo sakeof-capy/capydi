@@ -96,18 +96,24 @@ private:
         Reference<RelatedEntity> auto 
             processed_entity = config.pipe(entity);
 
-        if constexpr (sizeof...(TailConfigs) == 0)
-        {
-            return processed_entity;
-        } 
-        else 
-        {
-            return this->perform_piping(
-                Pack<RelatedEntity>{},
-                Pack<TailConfigs...>{}, 
-                processed_entity
-            );
-        }
+        return this->perform_piping(
+            Pack<RelatedEntity>{},
+            Pack<TailConfigs...>{}, 
+            processed_entity
+        );
+    }
+
+    template<
+        typename RelatedEntity
+    >
+    [[nodiscard]] constexpr Reference<RelatedEntity> auto
+        perform_piping(
+            Pack<RelatedEntity>&&,
+            Pack<>&&, 
+            Reference<RelatedEntity> auto entity
+        ) const 
+    {
+        return entity;
     }
 };
 

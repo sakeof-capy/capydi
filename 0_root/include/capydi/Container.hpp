@@ -56,7 +56,7 @@ public:
 
 public:
     template<Creatable Type>
-    constexpr Resolution<Type, Error> auto resolve() const
+    [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
     {
         /* TODO: implement dispatcher for retrieving key */
         using /* Pack<?> */ KeyPack = Pack<Type>;
@@ -71,7 +71,7 @@ public:
 
 private:
     template<typename Dispatcher, typename... Configs_> 
-    static constexpr Dispatcher 
+    [[nodiscard]] static constexpr Dispatcher 
         make_dispatcher(
             Unit<Dispatcher>&&, 
             std::tuple<Configs_...>&& configs_tuple
