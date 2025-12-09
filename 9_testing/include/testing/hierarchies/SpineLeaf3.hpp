@@ -14,12 +14,14 @@ public:
         : value_ { IDENTIFIER }
     {}
 
+    virtual ~Leaf1() = default;
+
     static Leaf1 create()
     {
         return Leaf1{};
     }
 
-    int get() const
+    virtual int get() const
     {
         return value_;
     }

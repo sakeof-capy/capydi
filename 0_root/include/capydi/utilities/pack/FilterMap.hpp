@@ -1,5 +1,5 @@
 #ifndef FILTER_FILTER_MAP_HPP_
-#define FILTER_MAP_HPP_
+#define FILTER_FILTER_MAP_HPP_
 
 #include "Pack.hpp"
 #include "None.hpp"
@@ -49,4 +49,4 @@ using filter_map_t = typename FilterMap<Pack, Mapper>::type;
 
 }
 
-#endif // !FILTER_MAP_HPP_
+#endif // !FILTER_FILTER_MAP_HPP_

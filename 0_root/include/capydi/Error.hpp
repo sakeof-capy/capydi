@@ -6,6 +6,7 @@ namespace capy::di
 
 enum class Error
 {
+    // Creational:
     CANNOT_BE_RESOLVED,
     DEPENDENCY_CANNOT_BE_RESOLVED,
 };

@@ -4,6 +4,7 @@
 #include "utilities/pack/Pack.hpp"
 #include "utilities/referencing/RuntimeRef.hpp"
 #include "configs/decorative/DecoratableConfig.hpp"
+#include "configs/ConfigType.hpp"
 #include <tuple>
 
 namespace capy::di
@@ -23,15 +24,24 @@ public:
     >;
 
 public:
+    static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
+
+public:
     template<typename... Dependencies>
-    RuntimeRef<Type> do_resolve(Pack<Type> keys, std::tuple<Dependencies...>& dependencies) const
+    RuntimeRef<Type> do_resolve(
+        Pack<Type> keys, 
+        std::tuple<Dependencies...>& dependencies
+    ) const
     {
         static Type instance = std::apply(Type::create, dependencies);
         return instance;
     }
 
     template<typename... Dependencies>
-    RuntimeRef<const Type> do_resolve(Pack<const Type> keys, std::tuple<Dependencies...>& dependencies) const
+    RuntimeRef<const Type> do_resolve(
+        Pack<const Type> keys, 
+        std::tuple<Dependencies...>& dependencies
+    ) const
     {
         return this->do_resolve(Pack<Type>{}, dependencies);
     }

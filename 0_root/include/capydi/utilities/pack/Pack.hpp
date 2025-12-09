@@ -12,6 +12,26 @@ struct Unit {};
 template<typename... Types>
 struct Pack {};
 
+template<auto Value>
+struct ValueUnit {};
+
+template<typename ValueUnit_>
+struct UnwrapValueUnit;
+
+template<auto Value>
+struct UnwrapValueUnit<ValueUnit<Value>>
+{
+    static constexpr auto value = Value;
+};
+
+template<typename ValueUnit_>
+static constexpr auto unwrap_value_unit_v = UnwrapValueUnit<ValueUnit_>::value;
+
+template<
+    template<typename> typename
+> 
+struct UnaryMetaFunction {};
+
 using EmptyPack = Pack<>;
 
 template<typename Pack_, template<typename...> typename Template>

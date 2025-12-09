@@ -1,84 +1,97 @@
-#ifndef CONTAINER_HPP_
-#define CONTAINER_HPP_
+#ifndef CONTAINER_TRY_HPP_
+#define CONTAINER_TRY_HPP_
 
+#include "configs/ConfigType.hpp"
+#include "configs/concepts/ChainableConfig.hpp"
+#include "configs/concepts/CreationalConfig.hpp"
+#include "configs/concepts/DiConfig.hpp"
+#include "dispatchers/CreationalConfigDispatcher.hpp"
+#include "dispatchers/ChainableConfigDispatcher.hpp"
 #include "utilities/pack/Pack.hpp"
-#include "utilities/pack/PackAlgorithm.hpp"
-#include "utilities/pack/FunctionTraits.hpp"
-#include "utilities/referencing/Reference.hpp"
-#include "utilities/referencing/RuntimeRef.hpp"
-#include "Error.hpp"
-#include "Resolution.hpp"
+#include "utilities/pack/Filter.hpp"
+#include "utilities/Rebind.hpp"
+#include "configs/ConfigClassifier.hpp"
 
-#include <expected>
 #include <tuple>
+#include <utility>
 
 namespace capy::di
 {
 
-template<typename T>
-concept Creatable = create_static_method_exists_and_is_unique_v<T>;
-
-template<typename... Configs>
-class DI: private Configs...
+template<DiConfig... Configs>
+class DI
 {
 private:
-    using Configs::do_resolve...;
-
-    template<typename T>
-    using dependencies_of_t = args_pack_t<decltype(T::create)>;
-
-    // TODO: check if Type::create function returns value of Type
+    using ConfigsPack = Pack<Configs...>;
+    using CreationalConfigsPack = filter_t<ConfigsPack, IsCreationalConfig>;
+    using ChainableConfigsPack = filter_t<ConfigsPack, IsChainableConfig>;
     
+    using CreationalDispatcherType = rebind_pack_t<
+        CreationalConfigsPack, 
+        CreationalConfigDispatcher
+    >; 
+    
+    using ChainableDispatcherType = rebind_pack_t<
+        ChainableConfigsPack, 
+        ChainableConfigDispatcher
+    >;
+
 public:
-    constexpr explicit DI(Configs&&... configs) 
-        : Configs(std::move(configs))...
+    explicit constexpr DI(Configs&&... configs)
+        : creational_dispatcher_ { make_dispatcher(
+            Unit<CreationalDispatcherType>{},
+            filter_configs(
+                UnaryMetaFunction<IsCreationalConfig>{},
+                configs...
+            )
+        )}
+        , chainable_dispatcher_ { make_dispatcher(
+            Unit<ChainableDispatcherType>{},
+            filter_configs(
+                UnaryMetaFunction<IsChainableConfig>{},
+                configs...
+            )
+        )}
     {}
 
 public:
-    template<Creatable Type, typename... Keys>
-    constexpr Resolution<Type> auto resolve() const
+    template<Creatable Type>
+    constexpr Resolution<Type, Error> auto resolve() const
     {
-        using /* Pack<?> */ KeyPack = Pack<Type, Keys...>;
-        using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
+        /* TODO: implement dispatcher for retrieving key */
+        using /* Pack<?> */ KeyPack = Pack<Type>;
 
-        auto error = [](Error error_code) {
-            return std::expected<RuntimeRef<Type>, Error> {  // TODO: replace RuntimeRef
-                std::unexpected { error_code } 
-            };
-        };
-
-        auto resolved_dependencies_result = valued_pack_for(
-            Dependencies{},
-
-            // TODO: provide a separate DependenciesResolver entity
-            //       to handle different types of arguments (e.g. std::shared_ptr)
-            [this]<typename T>(Unit<T&>) /* -> std::expected<Reference<Type>, Error> */ {
-                return this->resolve<std::remove_reference_t<T>>();
-            }
-        ); 
-
-        if (!resolved_dependencies_result.has_value()) [[unlikely]]
-        {
-            return error(Error::DEPENDENCY_CANNOT_BE_RESOLVED);
-        }
-
-        auto resolved_dependencies = resolved_dependencies_result.value();
-
-        #define RESOLUTION_CALL \
-            this->do_resolve(KeyPack{}, resolved_dependencies)
-        
-        if constexpr (requires { RESOLUTION_CALL; }) 
-        {   
-            using ReturnValue = decltype(RESOLUTION_CALL);
-            return std::expected<ReturnValue, Error> { RESOLUTION_CALL };
-        } 
-        else 
-        {
-            return error(Error::CANNOT_BE_RESOLVED);
-        }
+        return this->creational_dispatcher_
+            .template resolve<Type>()
+            .and_then([this](Reference<Type> auto entity) {
+                return this->chainable_dispatcher_
+                    .template apply_configs_chain<KeyPack, Type>(entity);
+            });
     }
+
+private:
+    template<typename Dispatcher, typename... Configs_> 
+    static constexpr Dispatcher 
+        make_dispatcher(
+            Unit<Dispatcher>&&, 
+            std::tuple<Configs_...>&& configs_tuple
+        )
+    {
+        return std::apply(
+            [](auto&&... configs) {
+                return Dispatcher(
+                    std::forward<decltype(configs)>(configs)...
+                );
+            }, 
+            std::move(configs_tuple)
+        );
+    }
+
+private:
+    CreationalDispatcherType creational_dispatcher_;
+    ChainableDispatcherType chainable_dispatcher_;
 };
 
 }
 
-#endif // !CONTAINER_HPP_
+#endif // !CONTAINER_TRY_HPP_

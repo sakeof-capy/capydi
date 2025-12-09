@@ -1,7 +1,6 @@
 #ifndef RESOLUTION_HPP_
 #define RESOLUTION_HPP_
 
-#include "Error.hpp"
 #include "utilities/referencing/Reference.hpp"
 
 #include <type_traits>
@@ -27,13 +26,13 @@ namespace hidden__
 }
 
 /**
- * aka std::expected<Reference<Dependency>, Error>
+ * aka std::expected<Reference<Dependency>, Error_>
  */
-template<typename T, typename Dependency>
+template<typename T, typename Dependency, typename Error_>
 concept Resolution 
     =   hidden__::is_wrapped_with_expected<T> 
     &&  Reference<typename T::value_type, Dependency> 
-    &&  std::same_as<typename T::error_type, Error> ;
+    &&  std::same_as<typename T::error_type, Error_>;
 
 }
 

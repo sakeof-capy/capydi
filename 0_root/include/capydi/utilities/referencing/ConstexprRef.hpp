@@ -1,14 +1,21 @@
 #ifndef CONSTEXPR_REF_HPP_
 #define CONSTEXPR_REF_HPP_
 
+#include "Reference.hpp"
+
 namespace capy::di
 {
 
 template<typename T, const T& Ref>
-struct ConstexprRef 
+struct ConstexprRef
 {
 public:
-    constexpr operator const T&() const noexcept
+    using ReferentType = T;
+    using ReferenceType = T&;
+    using ConstReferenceType = const T&;
+
+public:
+    constexpr operator ConstReferenceType() const noexcept
     {
         return Ref;
     }
