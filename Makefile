@@ -1,26 +1,30 @@
-BUILD_DIR := build
-SRC_DIR := .
-JOBS := $(shell nproc)
+include ./make/constants/Constants.mk
 
-define cmake_build
-	@cmake --build $(BUILD_DIR) --target $(1) -j $(JOBS)
-endef
+ifdef NATIVE_MODE
+include ./make/constants/NativeConstants.mk
+include ./make/Makefile.native.mk
+$(info Running in the native mode)
+else
+include ./make/constants/DockerConstants.mk
+include ./make/Makefile.docker.mk
+$(info Running in the docker mode)
+endif
 
-all: configure
-	$(call cmake_build,all)
+ifdef USE_NATIVE_BUILD_DIR
+include ./make/constants/NativeBuildDir.mk
+else
+include ./make/constants/DockerBuildDir.mk
+endif
 
-configure:
-	@cmake -S $(SRC_DIR) -B $(BUILD_DIR)
+ifdef BUILD_DIR
+$(info Using build dir: $(BUILD_DIR))
+else
+$(error Build dir not defined)
+endif
 
-run: configure
-	$(call cmake_build,capydi)
-	@$(BUILD_DIR)/0_root/capydi
-
-test: configure
-	$(call cmake_build,testing)
-	@$(BUILD_DIR)/9_testing/testing
-
+.PHONY: clean
 clean:
-	@rm -rf $(BUILD_DIR)
-
-.PHONY: all configure run test clean
+	@echo "Cleaning: $(BUILD_ROOT_DIR)"
+	@rm -rf $(BUILD_ROOT_DIR)
+	@echo "Cleaning: $(DOCS_OUTPUT_DIR)"
+	@rm -rf $(DOCS_OUTPUT_DIR)

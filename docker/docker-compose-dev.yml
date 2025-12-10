@@ -1,0 +1,29 @@
+services:
+  dev-base: &dev-base
+    image: capydi-dev-env:1.0.0
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    volumes:
+      - ..:/capydi
+    working_dir: /capydi
+    tty: true
+  all:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 all
+
+  configure:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 configure
+
+  run:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 run
+
+  test:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 test
+
+  docs:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 docs

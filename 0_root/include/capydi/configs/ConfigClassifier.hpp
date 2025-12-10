@@ -11,6 +11,8 @@
 namespace capy::di
 {
 
+/// @cond HIDDEN
+
 namespace hidden__
 {
     template<auto... Values>
@@ -96,6 +98,8 @@ namespace hidden__
         return std::tuple { std::move(std::get<Idx>(configs_tuple))... };
     }
 }
+
+//// @endcond
 
 template<
     template<typename> typename Predicate, 

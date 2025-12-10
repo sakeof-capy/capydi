@@ -15,6 +15,8 @@
 namespace capy::di
 {
 
+/// @cond HIDDEN
+
 namespace hidden__
 {
     template<typename... Types>
@@ -210,6 +212,8 @@ namespace hidden__
         );
     }
 }
+
+//// @endcond
 
 template<typename Handler, typename... PackElements>
 constexpr inline hidden__::valued_pack_for_result_t<

@@ -4,11 +4,15 @@
 namespace capy::di
 {
 
+/// @cond HIDDEN
+
 namespace hidden__
 {
     template<typename Interface, typename Decoratee>
     class InterfaceDecorator;
 }
+
+//// @endcond
 
 template<typename InterfaceType>
 struct Interface
@@ -16,6 +20,8 @@ struct Interface
     template<typename Decoratee>
     using Decorator = hidden__::InterfaceDecorator<InterfaceType, Decoratee>;
 };
+
+/// @cond HIDDEN
 
 namespace hidden__
 {
@@ -30,6 +36,10 @@ namespace hidden__
 
         // Additional interface-specific functionality can be added here
     };
+
+}
+
+//// @endcond
 
 }
 

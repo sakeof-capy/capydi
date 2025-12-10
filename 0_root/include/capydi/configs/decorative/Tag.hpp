@@ -11,11 +11,15 @@ namespace capy::di
 
 using TagType = std::size_t;
 
+/// @cond HIDDEN
+
 namespace hidden__
 {
     template<TagType TagValue, CreationalConfig Decoratee>
     class TagDecorator;
 }
+
+//// @endcond
 
 template<TagType TagValue>
 struct Tag
@@ -27,6 +31,8 @@ struct Tag
 
 template<TagType TagValue>
 struct TagKey {};
+
+/// @cond HIDDEN
 
 namespace hidden__
 {
@@ -123,6 +129,8 @@ namespace hidden__
         >
     {};
 }
+
+//// @endcond
 
 }
 

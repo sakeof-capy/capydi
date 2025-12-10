@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -e
+
+NATIVE_MODE=0
+USE_NATIVE_BUILD_DIR=0
+EXTRA_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --docker)
+            NATIVE_MODE=0
+            USE_NATIVE_BUILD_DIR=0
+            ;;
+        --native)
+            NATIVE_MODE=1
+            USE_NATIVE_BUILD_DIR=1
+            ;;
+        --no-docker-mode)
+            NATIVE_MODE=1
+            ;;
+        --native-build-dir|-h)
+            USE_NATIVE_BUILD_DIR=1
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--native|--docker] [--no-docker-mode] [--native-build-dir] <make targets>"
+            exit 0
+            ;;
+        *)
+            EXTRA_ARGS+=("$1")
+            ;;
+    esac
+    shift
+done
+
+MAKE_ARGS=()
+
+if [[ $NATIVE_MODE -eq 1 ]]; then
+    MAKE_ARGS+=("NATIVE_MODE=1")
+fi
+
+if [[ $USE_NATIVE_BUILD_DIR -eq 1 ]]; then
+    MAKE_ARGS+=("USE_NATIVE_BUILD_DIR=1")
+fi
+
+MAKE_ARGS+=("${EXTRA_ARGS[@]}")
+
+make "${MAKE_ARGS[@]}"

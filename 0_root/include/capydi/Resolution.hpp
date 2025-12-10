@@ -9,6 +9,8 @@
 namespace capy::di
 {
 
+/// @cond HIDDEN
+
 namespace hidden__
 {
     template<typename T>
@@ -24,6 +26,8 @@ namespace hidden__
     template<typename T>
     constexpr bool is_wrapped_with_expected = IsWrappedWithExpected<T>::value;
 }
+
+//// @endcond
 
 /**
  * aka std::expected<Reference<Dependency>, Error_>

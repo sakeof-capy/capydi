@@ -15,6 +15,16 @@
 #include <tuple>
 #include <utility>
 
+/**
+ * @dot
+ * digraph G {
+ *     A -> B;
+ *     // no Helper here
+ * }
+ * @enddot
+ */
+
+
 namespace capy::di
 {
 
