@@ -1,3 +1,15 @@
+/**
+ * @file ChainableConfigDispatcher.hpp
+ * @brief Dispatcher that applies chainable (decorator) configurations to created objects.
+ * 
+ * The ChainableConfigDispatcher handles the second phase of dependency resolution:
+ * applying a pipeline of transformations/decorators to created objects. It routes
+ * piping requests to applicable ChainableConfigs based on their RelatedKey.
+ * 
+ * @see ChainableConfig
+ * @see DI
+ */
+
 #ifndef CHAINABLE_CONFIG_DISPATCHER_HPP_
 #define CHAINABLE_CONFIG_DISPATCHER_HPP_
 
@@ -13,6 +25,8 @@
 
 namespace capy::di
 {
+
+/// @cond IMPLEMENTATION
 
 template<ChainableConfig... Configs>
 class ChainableConfigDispatcher : private Configs...
@@ -47,6 +61,7 @@ public:
         : Configs(std::move(configs))...
     {}
 
+    /// @brief Apply the decorator pipeline for a specific key to an entity
     template<typename RelatedKey, typename RelatedEntity>
     [[nodiscard]] constexpr Resolution<
         RelatedEntity, 

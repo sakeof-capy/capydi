@@ -1,3 +1,47 @@
+/**
+ * @file Container.hpp
+ * @brief Core dependency injection container for managing creational and chainable configurations.
+ * 
+ * The DI container is the heart of the Capydi framework. It orchestrates both creational
+ * and chainable configuration dispatchers to resolve dependencies with compile-time safety
+ * and runtime efficiency. The container separates dependencies into two categories:
+ * 
+ * - **Creational configs**: Instantiate and manage object creation
+ * - **Chainable configs**: Decorate and transform objects through a pipeline (e.g., Decorators)
+ * 
+ * @section architecture Architecture
+ * 
+ * The DI container uses a two-dispatcher pattern:
+ * 
+ * @dot
+ * digraph DI_Architecture {
+ *     rankdir=LR;
+ *     DI [shape=box, label="DI Container\n(Configs...)"];
+ *     Creational [shape=box, label="CreationalConfigDispatcher"];
+ *     Chainable [shape=box, label="ChainableConfigDispatcher"];
+ *     Entity [shape=ellipse, label="Entity<T>"];
+ *     
+ *     DI -> Creational [label="filters\ncreational"];
+ *     DI -> Chainable [label="filters\nchainable"];
+ *     Creational -> Entity [label="creates"];
+ *     Chainable -> Entity [label="decorates"];
+ * }
+ * @enddot
+ * 
+ * @section example Usage Example
+ * 
+ * @code
+ * // Create a container with both creational and chainable configs
+ * auto di = DI(
+ *     CreationalConfig<MyService>{},
+ *     Decorator<MyDecorator>{}
+ * );
+ * 
+ * // Resolve a dependency with optional decoration
+ * auto result = di.resolve<MyKey>();
+ * @endcode
+ */
+
 #ifndef CONTAINER_TRY_HPP_
 #define CONTAINER_TRY_HPP_
 
@@ -15,22 +59,27 @@
 #include <tuple>
 #include <utility>
 
-/**
- * @dot
- * digraph G {
- *     A -> B;
- *     // no Helper here
- * }
- * @enddot
- */
-
 
 namespace capy::di
 {
 
-template<DiConfig... Configs>
-class DI
-{
+/**
+ * @class DI
+ * @brief Primary dependency injection container managing configurations and resolution.
+ * 
+ * @tparam Configs Parameter pack of config types satisfying the DiConfig concept.
+ *         These are automatically classified as either CreationalConfig or ChainableConfig.
+ * 
+ * The DI container stores two internal dispatchers that handle different aspects:
+ * - **CreationalDispatcher**: Manages creation and lifetime of dependencies
+ * - **ChainableDispatcher**: Applies decorators and transformations to created objects
+ * 
+ * All resolution happens with compile-time type safety via concepts and template specialization.
+ * The container filters the input configs into two groups and rebinds them to their respective
+ * dispatchers, creating a type-safe, zero-overhead abstraction.
+ * 
+ * @note The container is @c constexpr-compatible, enabling compile-time DI setup where possible.
+ */
 private:
     using ConfigsPack = Pack<Configs...>;
     using CreationalConfigsPack = filter_t<ConfigsPack, IsCreationalConfig>;
