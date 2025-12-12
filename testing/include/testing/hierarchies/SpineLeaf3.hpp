@@ -132,6 +132,27 @@ private:
     Spine2& spine2_;
 };
 
+class NonCreatableSpine2
+{
+public:
+    static constexpr int IDENTIFIER = 
+        Leaf1::IDENTIFIER + Leaf2::IDENTIFIER;
+
+public:
+    NonCreatableSpine2(const Leaf1& l1, const Leaf2& l2)
+        : leaf1_ { l1 }, leaf2_ { l2 }
+    {}
+
+    int sum() const
+    {
+        return leaf1_.get() + leaf2_.get();
+    }
+
+private:
+    const Leaf1& leaf1_;
+    const Leaf2& leaf2_;
+};
+
 }
 
 #endif // !SPINE_LEAF_3_HPP_

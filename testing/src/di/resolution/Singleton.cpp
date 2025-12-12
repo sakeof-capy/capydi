@@ -183,4 +183,26 @@ TEST_CASE("singleton/error_handling:spine_leaf_3") {
             == Error::DEPENDENCY_CANNOT_BE_RESOLVED
         );
     }
+
+    // SECTION("non_creatable_entity")
+    // {
+    //     const DI container {
+    //         Singleton<Leaf1>{},
+    //         Singleton<Leaf2>{},
+    //         Singleton<Spine1>{},
+    //         Singleton<Spine2>{},
+    //         Singleton<RootSpine>{},
+    //         Singleton<NonCreatableSpine2>{}
+    //     };
+
+    //     Resolution<NonCreatableSpine2, Error> 
+    //         auto non_creatable_entity_resolution_result 
+    //             = container.resolve<NonCreatableSpine2>(); 
+
+    //     REQUIRE(!non_creatable_entity_resolution_result.has_value());
+    //     REQUIRE(
+    //         non_creatable_entity_resolution_result.error() 
+    //         == Error::DEPENDENCY_CANNOT_BE_RESOLVED
+    //     );
+    // }
 }
