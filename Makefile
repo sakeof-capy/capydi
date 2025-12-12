@@ -35,3 +35,10 @@ clean:
 	@rm -rf $(BUILD_ROOT_DIR)
 	@echo "Cleaning: $(DOCS_OUTPUT_DIR)"
 	@rm -rf $(DOCS_OUTPUT_DIR)
+
+.PHONY: deps
+deps:
+	@echo "Downloading git submodules..."
+	@git submodule update --init
+	@echo "Installing prerequisites..."
+	@$(SCRIPTS_DIR)/install_prerequisites.sh

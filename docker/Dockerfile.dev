@@ -1,17 +1,8 @@
 FROM gcc:15.2
 
 ENV DEBIAN_FRONTEND=noninteractive
-WORKDIR /opt
 
-RUN apt update && apt install -y    \
-    cmake                           \
-    graphviz                        \
-    wget                            \
-    tar                             \
-    && rm -rf /var/lib/apt/lists/*
+COPY scripts /capydi/scripts
+WORKDIR /capydi
 
-RUN wget https://github.com/doxygen/doxygen/releases/download/Release_1_15_0/doxygen-1.15.0.linux.bin.tar.gz \
-    && tar -xzf doxygen-1.15.0.linux.bin.tar.gz -C /usr/local \
-    && rm doxygen-1.15.0.linux.bin.tar.gz
-
-ENV PATH="/usr/local/doxygen-1.15.0/bin:${PATH}"
+RUN ./scripts/install_prerequisites.sh

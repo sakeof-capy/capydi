@@ -2,8 +2,9 @@ ifndef CONSTANTS_MK_
 CONSTANTS_MK_ := 1
 
 ROOT_DIR := .
-BUILD_ROOT_DIR := ${ROOT_DIR}/build
-DOCS_DIR := ${ROOT_DIR}/docs
-DOCS_OUTPUT_DIR := ${DOCS_DIR}/output
+SCRIPTS_DIR := $(ROOT_DIR)/scripts
+BUILD_ROOT_DIR := $(ROOT_DIR)/build
+DOCS_DIR := $(ROOT_DIR)/docs
+DOCS_OUTPUT_DIR := $(DOCS_DIR)/output
 
 endif # !CONSTANTS_MK_

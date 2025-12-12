@@ -2,8 +2,8 @@ services:
   dev-base: &dev-base
     image: capydi-dev-env:1.0.0
     build:
-      context: .
-      dockerfile: ./Dockerfile.dev
+      context: ..
+      dockerfile: ./docker/Dockerfile.dev
     volumes:
       - ..:/capydi
     working_dir: /capydi

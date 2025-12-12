@@ -16,5 +16,5 @@ add_custom_target(
     VERBATIM
 )
 
-add_subdirectory(0_root)
-add_subdirectory(9_testing)
+add_subdirectory(core)
+add_subdirectory(testing)

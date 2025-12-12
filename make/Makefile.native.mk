@@ -18,12 +18,12 @@ configure:
 .PHONY: run
 run: configure
 	$(call cmake_build,capydi)
-	@$(BUILD_DIR)/0_root/capydi
+	@$(BUILD_DIR)/core/root/capydi
 
 .PHONY: test
 test: configure
 	$(call cmake_build,testing)
-	@$(BUILD_DIR)/9_testing/testing
+	@$(BUILD_DIR)/testing/testing
 
 .PHONY: docs
 docs:
