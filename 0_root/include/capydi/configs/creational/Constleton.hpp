@@ -5,11 +5,28 @@
 #include "utilities/pack/PackAlgorithm.hpp"
 #include "utilities/referencing/ConstexprRef.hpp"
 #include "utilities/referencing/Reference.hpp"
+#include "configs/decorative/DecoratableConfig.hpp"
+#include "configs/ConfigType.hpp"
 
 #include <tuple>
+#include <type_traits>
 
 namespace capy::di
 {
+
+template<typename T>
+struct IsConstexprReference : std::false_type {};
+
+template<typename T, const T& Ref>
+struct IsConstexprReference<ConstexprRef<T, Ref>> : std::true_type {};
+
+template<typename T>
+constexpr bool is_constexpr_reference_v = IsConstexprReference<std::remove_cvref_t<T>>::value;
+
+// TODO: stop using ConstexprReference. Avoid tight coupling with ConstexprRef.
+template<typename T>
+concept ConstexprReference = is_constexpr_reference_v<T>;
+
 
 // template<class Lambda, int=(Lambda{}(), 0)>
 // constexpr bool is_constexpr(Lambda) { return true; }
@@ -24,21 +41,24 @@ struct Constleton
 // TODO: check for well-formness of Constleton (if it is constexpr)
 
 public:
-    using CentralType = Type;
+    using CentralType = const Type;
     using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
-        Pack<const Type>
+        Pack<CentralType>
     >;
 
 public:
-    template<typename... Dependencies>
-    constexpr Reference<Type> auto
+    static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
+
+public:
+    template<ConstexprReference... Dependencies>
+    constexpr Reference<CentralType> auto
         do_resolve(
-            Pack<const Type> keys, 
+            Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
-        static constexpr Type instance = std::apply(Type::create, dependencies);
-        return ConstexprRef<Type, instance>{};
+        static constexpr CentralType instance = std::apply(Type::create, dependencies);
+        return ConstexprRef<CentralType, instance>{};
     }
 };
 

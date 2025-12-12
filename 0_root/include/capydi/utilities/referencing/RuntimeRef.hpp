@@ -87,5 +87,3 @@ private:
 }
 
 #endif // !RUNTIME_REF_HPP_
-
-#endif // !RUNTIME_REF_HPP_

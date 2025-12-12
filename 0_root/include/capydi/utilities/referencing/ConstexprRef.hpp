@@ -11,6 +11,7 @@
 #define CONSTEXPR_REF_HPP_
 
 #include "Reference.hpp"
+#include <type_traits>
 
 namespace capy::di
 {
@@ -44,11 +45,12 @@ namespace capy::di
  * @see Reference
  */
 template<typename T, const T& Ref>
+    requires std::is_const_v<T>
 struct ConstexprRef
 {
 public:
     using ReferentType = T;
-    using ReferenceType = T&;
+    using ReferenceType = const T&;
     using ConstReferenceType = const T&;
 
 public:

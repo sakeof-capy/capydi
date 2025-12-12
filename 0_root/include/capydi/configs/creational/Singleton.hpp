@@ -5,13 +5,14 @@
 #include "utilities/referencing/RuntimeRef.hpp"
 #include "configs/decorative/DecoratableConfig.hpp"
 #include "configs/ConfigType.hpp"
+
 #include <tuple>
 
 namespace capy::di
 {
 
 template<typename Type>
-struct Singleton 
+class Singleton 
     : DecoratableConfig<
         Singleton<Type>
     >

@@ -23,8 +23,10 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("leaf_resolution")
     {
-        auto leaf1_resolution_result = container.resolve<Leaf1>();
-        auto leaf2_resolution_result = container.resolve<Leaf2>();
+        Resolution<Leaf1, Error> auto 
+            leaf1_resolution_result = container.resolve<Leaf1>();
+        Resolution<Leaf2, Error> auto 
+            leaf2_resolution_result = container.resolve<Leaf2>();
 
         REQUIRE(leaf1_resolution_result.has_value());
         REQUIRE(leaf2_resolution_result.has_value());
@@ -38,8 +40,10 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("leaf_const_resolution")
     {
-        auto leaf1_resolution_result = container.resolve<const Leaf1>();
-        auto leaf2_resolution_result = container.resolve<const Leaf2>();
+        Resolution<const Leaf1, Error> auto 
+            leaf1_resolution_result = container.resolve<const Leaf1>();
+        Resolution<const Leaf2, Error> auto 
+            leaf2_resolution_result = container.resolve<const Leaf2>();
 
         REQUIRE(leaf1_resolution_result.has_value());
         REQUIRE(leaf2_resolution_result.has_value());
@@ -53,8 +57,10 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("spine_resolution")
     {
-        auto spine1_resolution_result = container.resolve<Spine1>();
-        auto spine2_resolution_result = container.resolve<Spine2>();
+        Resolution<Spine1, Error> auto 
+            spine1_resolution_result = container.resolve<Spine1>();
+        Resolution<Spine2, Error> auto 
+            spine2_resolution_result = container.resolve<Spine2>();
 
         REQUIRE(spine1_resolution_result.has_value());
         REQUIRE(spine2_resolution_result.has_value());
@@ -68,8 +74,10 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("spine_const_resolution")
     {
-        auto spine1_resolution_result = container.resolve<const Spine1>();
-        auto spine2_resolution_result = container.resolve<const Spine2>();
+        Resolution<const Spine1, Error> auto 
+            spine1_resolution_result = container.resolve<const Spine1>();
+        Resolution<const Spine2, Error> auto 
+            spine2_resolution_result = container.resolve<const Spine2>();
 
         REQUIRE(spine1_resolution_result.has_value());
         REQUIRE(spine2_resolution_result.has_value());
@@ -83,7 +91,8 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("root_spine_resolution")
     {
-        auto root_spine_resolution_result = container.resolve<RootSpine>();
+        Resolution<RootSpine, Error> auto 
+            root_spine_resolution_result = container.resolve<RootSpine>();
         REQUIRE(root_spine_resolution_result.has_value());
 
         RootSpine& root_spine = root_spine_resolution_result.value();
@@ -92,7 +101,8 @@ TEST_CASE("singleton:spine_leaf_3") {
 
     SECTION("root_spine_const_resolution")
     {
-        auto root_spine_resolution_result = container.resolve<const RootSpine>();
+        Resolution<const RootSpine, Error> auto 
+            root_spine_resolution_result = container.resolve<const RootSpine>();
         REQUIRE(root_spine_resolution_result.has_value());
 
         const RootSpine& root_spine = root_spine_resolution_result.value();

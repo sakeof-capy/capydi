@@ -80,6 +80,10 @@ namespace capy::di
  * 
  * @note The container is @c constexpr-compatible, enabling compile-time DI setup where possible.
  */
+
+template<typename... Configs>
+class DI
+{
 private:
     using ConfigsPack = Pack<Configs...>;
     using CreationalConfigsPack = filter_t<ConfigsPack, IsCreationalConfig>;

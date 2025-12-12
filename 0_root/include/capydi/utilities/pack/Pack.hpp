@@ -153,5 +153,3 @@ using rebind_pack_t = typename RebindPack<Pack_, Template>::type;
 }
 
 #endif // !PACK_HPP_
-
-#endif // !PACK_HPP_
