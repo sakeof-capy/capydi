@@ -1,11 +1,14 @@
-FROM ubuntu:24.04
+FROM gcc:15.2
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /opt
 
 RUN apt update && apt install -y    \
-    build-essential                 \
     cmake                           \
+    graphviz                        \
     wget                            \
     tar                             \
-    graphviz
+    && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://github.com/doxygen/doxygen/releases/download/Release_1_15_0/doxygen-1.15.0.linux.bin.tar.gz \
     && tar -xzf doxygen-1.15.0.linux.bin.tar.gz -C /usr/local \

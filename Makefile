@@ -1,4 +1,5 @@
 include ./make/constants/Constants.mk
+include ./make/utilities/OpenDocs.mk
 
 ifdef NATIVE_MODE
 include ./make/constants/NativeConstants.mk
@@ -21,6 +22,12 @@ $(info Using build dir: $(BUILD_DIR))
 else
 $(error Build dir not defined)
 endif
+
+.PHONY: open-docs
+open-docs: DOCS_INDEX_HTML_PATH := $(DOCS_OUTPUT_DIR)/html/index.html
+open-docs:
+	@echo "Opening documentation at: $(DOCS_INDEX_HTML_PATH)"
+	$(OPEN_CMD) $(DOCS_INDEX_HTML_PATH)
 
 .PHONY: clean
 clean:
