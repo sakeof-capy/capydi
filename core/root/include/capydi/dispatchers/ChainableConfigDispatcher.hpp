@@ -13,12 +13,12 @@
 #ifndef CHAINABLE_CONFIG_DISPATCHER_HPP_
 #define CHAINABLE_CONFIG_DISPATCHER_HPP_
 
-#include "configs/concepts/ChainableConfig.hpp"
-#include "utilities/referencing/Reference.hpp"
-#include "utilities/pack/Pack.hpp"
-#include "utilities/pack/Filter.hpp"
-#include "Resolution.hpp"
-#include "Error.hpp"
+#include "capydi/configs/concepts/ChainableConfig.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/utilities/pack/Pack.hpp"
+#include "capydi/utilities/pack/Filter.hpp"
+#include "capydi/Resolution.hpp"
+#include "capydi/Error.hpp"
 
 #include <concepts>
 #include <expected>

@@ -1,7 +1,7 @@
 #ifndef PACK_ZIP_HPP_
 #define PACK_ZIP_HPP_
 
-#include "utilities/pack/Pack.hpp"
+#include "capydi/utilities/pack/Pack.hpp"
 
 namespace capy::di
 {

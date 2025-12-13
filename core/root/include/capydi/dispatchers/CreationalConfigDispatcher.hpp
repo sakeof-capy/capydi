@@ -13,14 +13,14 @@
 #ifndef CREATIONAL_CONFIG_DISPATCHER_HPP_
 #define CREATIONAL_CONFIG_DISPATCHER_HPP_
 
-#include "configs/concepts/CreationalConfig.hpp"
-#include "utilities/pack/Pack.hpp"
-#include "utilities/pack/PackAlgorithm.hpp"
-#include "utilities/pack/FunctionTraits.hpp"
-#include "utilities/referencing/Reference.hpp"
-#include "utilities/referencing/RuntimeRef.hpp"
-#include "Resolution.hpp"
-#include "Error.hpp"
+#include "capydi/configs/concepts/CreationalConfig.hpp"
+#include "capydi/utilities/pack/Pack.hpp"
+#include "capydi/utilities/pack/PackAlgorithm.hpp"
+#include "capydi/utilities/pack/FunctionTraits.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/utilities/referencing/RuntimeRef.hpp"
+#include "capydi/Resolution.hpp"
+#include "capydi/Error.hpp"
 
 #include <expected>
 #include <tuple>

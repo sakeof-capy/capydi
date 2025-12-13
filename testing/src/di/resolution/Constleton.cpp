@@ -1,9 +1,9 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
-#include <catch2/catch_test_macros.hpp>
-
 #include "hierarchies/ConstSpineLeaf3.hpp"
-#include "Container.hpp"
-#include "configs/creational/Constleton.hpp"
+
+#include <capydi/Container.hpp>
+#include <capydi/configs/creational/Constleton.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using capy::di::DI;
 using capy::di::Error;

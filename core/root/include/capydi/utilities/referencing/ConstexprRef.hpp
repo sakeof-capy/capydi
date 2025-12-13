@@ -11,6 +11,7 @@
 #define CONSTEXPR_REF_HPP_
 
 #include "Reference.hpp"
+
 #include <type_traits>
 
 namespace capy::di

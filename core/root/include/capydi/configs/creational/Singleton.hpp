@@ -1,10 +1,10 @@
 #ifndef SINGLETON_HPP_
 #define SINGLETON_HPP_
 
-#include "utilities/pack/Pack.hpp"
-#include "utilities/referencing/RuntimeRef.hpp"
-#include "configs/decorative/DecoratableConfig.hpp"
-#include "configs/ConfigType.hpp"
+#include "capydi/utilities/pack/Pack.hpp"
+#include "capydi/utilities/referencing/RuntimeRef.hpp"
+#include "capydi/configs/decorative/DecoratableConfig.hpp"
+#include "capydi/configs/ConfigType.hpp"
 
 #include <tuple>
 

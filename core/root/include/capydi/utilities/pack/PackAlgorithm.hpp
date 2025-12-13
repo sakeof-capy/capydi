@@ -5,7 +5,7 @@
 #include "PackMap.hpp"
 #include "Head.hpp"
 #include "PackConcat.hpp"
-#include "utilities/Rebind.hpp"
+#include "capydi/utilities/Rebind.hpp"
 
 #include <tuple>
 #include <type_traits>

@@ -3,12 +3,12 @@
 struct A;
 struct B;
 
-#include "utilities/pack/PackAlgorithm.hpp"
-#include "utilities/referencing/Reference.hpp"
-#include "configs/creational/Singleton.hpp"
-#include "configs/creational/Constleton.hpp"
-#include "configs/decorative/Tag.hpp"
-#include "configs/concepts/CreationalConfig.hpp"
+#include "capydi/utilities/pack/PackAlgorithm.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/configs/creational/Singleton.hpp"
+#include "capydi/configs/creational/Constleton.hpp"
+#include "capydi/configs/decorative/Tag.hpp"
+#include "capydi/configs/concepts/CreationalConfig.hpp"
 #include "Container.hpp"
 
 using namespace capy::di;
@@ -143,7 +143,7 @@ using namespace capy::di;
 //     return CPR<int, a>{};
 // }
 
-// #include "Resolution.hpp"
+// #include "capydi/Resolution.hpp"
 
 // int main() 
 // {

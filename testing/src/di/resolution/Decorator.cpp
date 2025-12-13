@@ -1,11 +1,9 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
-#include <catch2/catch_test_macros.hpp>
 #include "hierarchies/SpineLeaf3.hpp"
 
-
-#include "Container.hpp"
-#include "configs/chainable/Decorator.hpp"
-#include "configs/concepts/ChainableConfig.hpp"
+#include <capydi/Container.hpp>
+#include <capydi/configs/chainable/Decorator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using capy::di::DI;
 using capy::di::Error;

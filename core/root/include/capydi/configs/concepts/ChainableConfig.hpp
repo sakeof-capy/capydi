@@ -11,8 +11,9 @@
 #ifndef CHAINABLE_CONFIG_HPP_
 #define CHAINABLE_CONFIG_HPP_
 
-#include "utilities/referencing/Reference.hpp"
-#include "configs/ConfigType.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/configs/ConfigType.hpp"
+
 #include <concepts>
 
 namespace capy::di

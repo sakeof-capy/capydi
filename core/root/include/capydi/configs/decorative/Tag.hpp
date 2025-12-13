@@ -1,9 +1,10 @@
 #ifndef TAG_CONFIG_HPP_
 #define TAG_CONFIG_HPP_
 
-#include "configs/concepts/CreationalConfig.hpp"
-#include "utilities/pack/Append.hpp"
-#include "utilities/referencing/Reference.hpp"
+#include "capydi/configs/concepts/CreationalConfig.hpp"
+#include "capydi/utilities/pack/Append.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+
 #include <cstddef>
 
 namespace capy::di

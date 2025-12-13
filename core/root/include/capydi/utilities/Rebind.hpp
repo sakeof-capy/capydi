@@ -1,7 +1,7 @@
 #ifndef REBIND_HPP_
 #define REBIND_HPP_
 
-#include "utilities/pack/Pack.hpp"
+#include "capydi/utilities/pack/Pack.hpp"
 
 namespace capy::di
 {

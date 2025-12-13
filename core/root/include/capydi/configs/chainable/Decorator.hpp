@@ -1,9 +1,10 @@
 #ifndef DECORATOR_HPP_
 #define DECORATOR_HPP_
 
-#include "configs/concepts/ChainableConfig.hpp"
-#include "utilities/referencing/Reference.hpp"
-#include "configs/creational/Singleton.hpp"
+#include "capydi/configs/concepts/ChainableConfig.hpp"
+#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/configs/creational/Singleton.hpp"
+
 #include <type_traits>
 
 namespace capy::di
