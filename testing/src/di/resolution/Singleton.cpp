@@ -107,7 +107,7 @@ TEST_CASE("singleton:spine_leaf_3") {
 
         const RootSpine& root_spine = root_spine_resolution_result.value();
         REQUIRE(root_spine.sum() == RootSpine::IDENTIFIER);
-    }
+        }
 }
 
 TEST_CASE("singleton/error_handling:spine_leaf_3") {
