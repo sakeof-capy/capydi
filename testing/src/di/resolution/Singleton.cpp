@@ -112,7 +112,7 @@ TEST_CASE("singleton:spine_leaf_3") {
 
 TEST_CASE("singleton/error_handling:spine_leaf_3") {
     using namespace capy::di::spine_leaf_3;
-
+    int a = 2;
     SECTION("empty_container_resolution")
     {
         const DI container {
