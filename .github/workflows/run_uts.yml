@@ -1,0 +1,36 @@
+name: Run UTs
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+    paths: *ci_paths
+  push:
+    branches:
+      - main
+    paths: *ci_paths
+  
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y make docker-compose
+
+    - name: Run UTs (Unit Tests)
+      run: ./dev deps
+      run: ./dev test
