@@ -10,6 +10,7 @@ on:
       - synchronize
       - reopened
     paths:
+      - ".github/**"
       - "core/**"
       - "dependencies/**"
       - "docker/**"
@@ -23,6 +24,7 @@ on:
     branches:
       - main
     paths: 
+      - ".github/**"
       - "core/**"
       - "dependencies/**"
       - "docker/**"
