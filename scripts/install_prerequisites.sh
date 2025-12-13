@@ -10,6 +10,8 @@ apt-get update
 apt-get install -y  \
     wget            \
     tar             \
+    make            \
+    docker-compose  \
     cmake           \
     graphviz
 

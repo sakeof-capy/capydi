@@ -1,5 +1,3 @@
 # capydi
 
-## Pre-requisites
-
-C++ required standard - 23
+[![Run UTs](https://github.com/sakeof-capy/capydi/actions/workflows/run_uts.yml/badge.svg?branch=main)](https://github.com/sakeof-capy/capydi/actions/workflows/run_uts.yml)
