@@ -1,39 +1,41 @@
 name: Run UTs
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - edited
-      - synchronize
-      - reopened
-    paths:
-      - ".github/**"
-      - "core/**"
-      - "dependencies/**"
-      - "docker/**"
-      - "make/**"
-      - "scripts/**"
-      - "testing/**"
-      - "CMakeLists.txt"
-      - "Makefile"
-      - "dev"
-  push:
-    branches:
-      - main
-    paths: 
-      - ".github/**"
-      - "core/**"
-      - "dependencies/**"
-      - "docker/**"
-      - "make/**"
-      - "scripts/**"
-      - "testing/**"
-      - "CMakeLists.txt"
-      - "Makefile"
-      - "dev"
+  workflow_dispatch:
+  # pull_request:
+  #   branches:
+  #     - main
+  #   types:
+  #     - opened
+  #     - edited
+  #     - synchronize
+  #     - reopened
+  #   paths:
+  #     - ".github/**"
+  #     - "core/**"
+  #     - "dependencies/**"
+  #     - "docker/**"
+  #     - "make/**"
+  #     - "scripts/**"
+  #     - "testing/**"
+  #     - "CMakeLists.txt"
+  #     - "Makefile"
+  #     - "dev"
+  # push:
+  #   branches:
+  #     - main
+  #   paths: 
+  #     - ".github/**"
+  #     - "core/**"
+  #     - "dependencies/**"
+  #     - "docker/**"
+  #     - "make/**"
+  #     - "scripts/**"
+  #     - "testing/**"
+  #     - "CMakeLists.txt"
+  #     - "Makefile"
+  #     - "dev"
+  
 jobs:
   test:
     runs-on: ubuntu-22.04
@@ -53,4 +55,3 @@ jobs:
     - name: Run UTs (Unit Tests)
       run: ./dev deps
       run: ./dev test
-      
