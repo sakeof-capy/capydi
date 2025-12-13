@@ -49,4 +49,5 @@ jobs:
         sudo apt install -y make docker-compose
 
     - name: Run UTs (Unit Tests)
+      run: ./dev deps
       run: ./dev test
