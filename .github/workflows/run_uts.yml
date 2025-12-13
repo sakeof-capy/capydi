@@ -1,5 +1,17 @@
 name: Run UTs
 
+ci_paths: &ci_paths
+  - ".github/**"
+  - "core/**"
+  - "dependencies/**"
+  - "docker/**"
+  - "make/**"
+  - "scripts/**"
+  - "testing/**"
+  - "CMakeLists.txt"
+  - "Makefile"
+  - "dev"
+
 on:
   pull_request:
     branches:
