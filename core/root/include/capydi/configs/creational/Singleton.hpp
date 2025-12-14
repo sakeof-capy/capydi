@@ -13,7 +13,7 @@ namespace capy::di
 
 template<typename Type>
 class Singleton 
-    : DecoratableConfig<
+    : public DecoratableConfig<
         Singleton<Type>
     >
 {

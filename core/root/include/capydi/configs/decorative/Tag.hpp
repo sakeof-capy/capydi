@@ -1,11 +1,11 @@
 #ifndef TAG_CONFIG_HPP_
 #define TAG_CONFIG_HPP_
 
+#include "capydi/utilities/Overload.hpp"
 #include "capydi/configs/concepts/CreationalConfig.hpp"
 #include "capydi/utilities/pack/Append.hpp"
+#include "capydi/utilities/pack/PackMap.hpp"
 #include "capydi/utilities/referencing/Reference.hpp"
-
-#include <cstddef>
 
 namespace capy::di
 {
@@ -29,109 +29,54 @@ struct Tag
     using Decorator = hidden__::TagDecorator<TagValue, Decoratee>;
 };
 
-
-template<TagType TagValue>
-struct TagKey {};
-
-/// @cond HIDDEN
-
 namespace hidden__
 {
-    template<
-        typename Self,
-        TagType TagValue, 
-        CreationalConfig Decoratee, 
-        typename ResolutionKey_
-    >
-    class TagUnit
+    template<TagType TagValue, CreationalConfig Decoratee>
+    class TagDecorator
     {
     public:
-        using ResolutionKey = append_t<TagKey<TagValue>, ResolutionKey_>;
+        using KeysPack = resolution_keys_pack_t<Decoratee>;
 
-    protected:
-        template<typename... Dependencies>
-        constexpr Reference<central_type_t<Decoratee>> auto 
-            do_resolve(
-                ResolutionKey key, 
-                std::tuple<Dependencies...>& dependencies
-            ) const
+        template<typename Key>
+        struct TransformKey 
         {
-            return static_cast<const Self&>(*this)
-                .decoratee()
-                .do_resolve(
-                    ResolutionKey_{}, 
-                    dependencies
-                );
-        }
-    };
+            using type = append_t<ValueUnit<TagValue>, Key>;
+        };
 
-    template<
-        TagType TagValue, 
-        CreationalConfig Decoratee,
-        typename ResolutionKeysPack
-    >
-    class TagUnitAggregator;
-
-    template<
-        TagType TagValue, 
-        CreationalConfig Decoratee,
-        typename... ResolutionKeys
-    >
-    class TagUnitAggregator<TagValue, Decoratee, Pack<ResolutionKeys...>>
-        : public TagUnit<
-            /* Self             = */ TagUnitAggregator<
-                TagValue, 
-                Decoratee, 
-                Pack<ResolutionKeys...>
-            >,
-            /* TagValue         = */ TagValue, 
-            /* Decoratee        = */ Decoratee, 
-            /* ResolutionKeys_  = */ResolutionKeys
-        >...
-    {
-    protected:
-        using Self = TagUnitAggregator<
-            TagValue, 
-            Decoratee, 
-            Pack<ResolutionKeys...>
-        >;
-
-        using TagUnit<
-            Self, TagValue, Decoratee, ResolutionKeys
-        >::do_resolve...;
-
-        using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
-            typename TagUnit<
-                Self, TagValue, Decoratee, ResolutionKeys
-            >::ResolutionKey...
-        >; 
+        template<typename Key>
+        using transform_key_t = typename TransformKey<Key>::type;
 
     public:
-        constexpr const Decoratee& decoratee() const noexcept
+        using CentralType = central_type_t<Decoratee>;
+        using ResolutionKeysPack = pack_map_t<KeysPack, TransformKey>;
+
+    public:
+        static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
+
+    public:
+        template<typename... Args>
+        constexpr Reference<CentralType> auto 
+            do_resolve(Args&&... args) const
         {
-            return this->decoratee_;
+            return [&, this]<typename... Keys>(Pack<Keys...>&&) {
+                return Overload {
+                    [this]<typename... Dependencies>(
+                        transform_key_t<Keys>&&,
+                        std::tuple<Dependencies...>& dependencies
+                    ) {
+                        return this->decoratee_.do_resolve(
+                            Keys{}, 
+                            dependencies
+                        );
+                    }...
+                }(std::forward<Args>(args)...);
+            }(KeysPack{});
         }
 
-        Decoratee& decoratee() noexcept
-        {
-            return this->decoratee_;
-        }
-        
     private:
         Decoratee decoratee_;
     };
-
-    template<TagType TagValue, CreationalConfig Decoratee>
-    class TagDecorator 
-        : public TagUnitAggregator<
-            TagValue,
-            Decoratee,
-            resolution_keys_pack_t<Decoratee>
-        >
-    {};
 }
-
-//// @endcond
 
 }
 

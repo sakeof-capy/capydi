@@ -118,14 +118,14 @@ public:
     {}
 
 public:
-    template<Creatable Type>
+    template<Creatable Type, typename KeyPack = Pack<Type>>
     [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
     {
         /* TODO: implement dispatcher for retrieving key */
-        using /* Pack<?> */ KeyPack = Pack<Type>;
+        // using /* Pack<?> */ KeyPack = Pack<Type>;
 
         return this->creational_dispatcher_
-            .template resolve<Type>()
+            .template resolve<Type, KeyPack>()
             .and_then([this](Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
                     .template apply_configs_chain<KeyPack, Type>(entity);

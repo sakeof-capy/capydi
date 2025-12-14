@@ -34,7 +34,7 @@ concept ConstexprReference = is_constexpr_reference_v<T>;
 
 template<typename Type>
 struct Constleton
-    : DecoratableConfig<
+    : public DecoratableConfig<
         Constleton<Type>
     >
 {

@@ -79,10 +79,10 @@ public:
      *          - A reference to the created instance on success
      *          - An error code if creation failed or dependencies couldn't be resolved
      */
-    template<Creatable Type>
+    template<Creatable Type, typename KeyPack = Pack<Type>>
     constexpr Resolution<Type, Error> auto resolve() const
     {
-        using /* Pack<?> */ KeyPack = Pack<Type>;
+        // using /* Pack<?> */ KeyPack = Pack<Type>;
         using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
 
         #define RESOLUTION_CALL \
