@@ -48,6 +48,7 @@ template<typename Config>
 concept CreationalConfig = requires() {
     typename Config::CentralType;
     typename Config::ResolutionKeysPack;
+    typename Config::DependencyResolutionKeysOverridesPack;
     Config::CONFIG_TYPE;
 }
 && std::same_as<std::remove_cv_t<decltype(Config::CONFIG_TYPE)>, ConfigType>
@@ -75,6 +76,13 @@ using central_type_t = typename Config::CentralType;
 /// Helper alias to extract the resolution keys from a CreationalConfig
 template<CreationalConfig Config>
 using resolution_keys_pack_t = typename Config::ResolutionKeysPack;
+
+template<CreationalConfig Config>
+using dependency_resolution_keys_overrides_pack_t 
+    = typename Config::DependencyResolutionKeysOverridesPack;
+
+template<CreationalConfig Config>
+using default_key_t = Pack<central_type_t<Config>>;
 
 }
 

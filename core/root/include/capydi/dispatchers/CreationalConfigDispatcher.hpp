@@ -16,9 +16,9 @@
 #include "capydi/configs/concepts/CreationalConfig.hpp"
 #include "capydi/utilities/pack/Pack.hpp"
 #include "capydi/utilities/pack/PackAlgorithm.hpp"
-#include "capydi/utilities/pack/FunctionTraits.hpp"
 #include "capydi/utilities/referencing/Reference.hpp"
 #include "capydi/utilities/referencing/RuntimeRef.hpp"
+#include "capydi/DependenciesInfo.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
@@ -27,13 +27,6 @@
 
 namespace capy::di
 {
-
-/// @cond IMPLEMENTATION
-
-template<typename T>
-concept Creatable = create_static_method_exists_and_is_unique_v<T>;
-
-/// @endcond
 
 /**
  * @class CreationalConfigDispatcher
@@ -57,10 +50,10 @@ template<CreationalConfig... Configs>
 class CreationalConfigDispatcher : Configs...
 {
 private:
-    using Configs::do_resolve...;
+    using LocalDependenciesInfo = DependenciesInfo<Configs...>;
 
-    template<typename T>
-    using dependencies_of_t = args_pack_t<decltype(T::create)>;
+private:
+    using Configs::do_resolve...;
 
 public:
     constexpr explicit CreationalConfigDispatcher(
@@ -79,20 +72,25 @@ public:
      *          - A reference to the created instance on success
      *          - An error code if creation failed or dependencies couldn't be resolved
      */
-    template<Creatable Type, typename KeyPack = Pack<Type>>
+    template<typename Type, typename KeyPack = Pack<Type>>
     constexpr Resolution<Type, Error> auto resolve() const
     {
         // using /* Pack<?> */ KeyPack = Pack<Type>;
-        using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
+        using DependencyKeys = 
+            LocalDependenciesInfo::template dependency_keys_pack_of_t<KeyPack>;
 
         #define RESOLUTION_CALL \
             this->do_resolve(KeyPack{}, resolved_dependencies)
 
         return 
             valued_pack_for(
-                Dependencies{},
-                [this]<typename T>(Unit<T&>) -> Resolution<T, Error> auto {
-                    return this->resolve<T>();
+                DependencyKeys{},
+
+                [this]<
+                    typename T, 
+                    typename Key
+                >(Unit<Pack<T&, Key>>) -> Resolution<T, Error> auto {
+                    return this->resolve<T, Key>();
                 }
             )
             .transform_error([](const auto&) {

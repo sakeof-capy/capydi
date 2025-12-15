@@ -118,7 +118,7 @@ public:
     {}
 
 public:
-    template<Creatable Type, typename KeyPack = Pack<Type>>
+    template<typename Type, typename KeyPack = Pack<Type>>
     [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
     {
         /* TODO: implement dispatcher for retrieving key */
