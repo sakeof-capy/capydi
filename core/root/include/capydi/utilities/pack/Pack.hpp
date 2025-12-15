@@ -16,6 +16,8 @@
 #ifndef PACK_HPP_
 #define PACK_HPP_
 
+#include "None.hpp"
+
 #include <tuple>
 
 namespace capy::di
@@ -63,6 +65,57 @@ struct Unit {};
  */
 template<typename... Types>
 struct Pack {};
+
+template<typename Pack_>
+struct Unpack;
+
+template<typename Type>
+struct Unpack<
+    Pack<Type>
+>
+{
+    using type = Type;
+};
+
+template<typename... Types>
+struct Unpack<Pack<Types...>>
+{
+    static_assert(
+        false, 
+        "Unable to unpack pack that contains more than 1 element"
+    );
+};
+
+template<>
+struct Unpack<Pack<>>
+{
+    static_assert(
+        false, 
+        "Unable to unpack an empty pack"
+    );
+};
+
+template<typename Pack_>
+using unpack_t = typename Unpack<Pack_>::type;
+
+
+template<typename Pack_>
+struct UnpackOrNone
+{
+    using type = None;
+};
+
+template<typename Type>
+struct UnpackOrNone<
+    Pack<Type>
+>
+{
+    using type = Type;
+};
+
+
+template<typename Pack_>
+using unpack_or_none_t = typename UnpackOrNone<Pack_>::type;
 
 /**
  * @class ValueUnit
@@ -120,6 +173,9 @@ struct UnaryMetaFunction {};
 /// The empty type pack; useful as a base case for recursive operations
 using EmptyPack = Pack<>;
 
+template<typename Pack_>
+constexpr bool is_empty_pack_v = std::same_as<Pack_, EmptyPack>;
+
 /**
  * @class RebindPack
  * @brief Type trait that repackages a Pack's elements into a different template.
@@ -149,6 +205,20 @@ struct RebindPack<Pack<Elements...>, Template>
 /// Convenience alias for RebindPack
 template<typename Pack_, template<typename...> typename Template>
 using rebind_pack_t = typename RebindPack<Pack_, Template>::type;
+
+
+template<typename Pack_, std::size_t Index>
+struct PackElement
+{
+private:
+    using PackAsTuple = rebind_pack_t<Pack_, std::tuple>;
+
+public:
+    using type = std::tuple_element_t<Index, PackAsTuple>;
+};
+
+template<typename Pack_, std::size_t Index>
+using pack_element_t = typename PackElement<Pack_, Index>::type;
 
 }
 

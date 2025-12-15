@@ -18,6 +18,13 @@ namespace hidden__
 {
     template<TagType TagValue, CreationalConfig Decoratee>
     class TagDecorator;
+
+    template<
+        std::size_t DependencyIndex, 
+        TagType TagValue, 
+        CreationalConfig Decoratee
+    >
+    class TagDependencyDecorator;
 }
 
 //// @endcond
@@ -27,6 +34,14 @@ struct Tag
 {
     template<CreationalConfig Decoratee>
     using Decorator = hidden__::TagDecorator<TagValue, Decoratee>;
+
+    template<std::size_t DependencyIndex, CreationalConfig Decoratee>
+    using DependencyDecorator 
+        = hidden__::TagDependencyDecorator<
+            DependencyIndex, 
+            TagValue,
+            Decoratee
+        >;
 };
 
 namespace hidden__
@@ -75,6 +90,26 @@ namespace hidden__
 
     private:
         Decoratee decoratee_;
+    };
+
+    template<
+        std::size_t DependencyIndex, 
+        TagType TagValue, 
+        CreationalConfig Decoratee
+    >
+    class TagDependencyDecorator : public Decoratee
+    {
+    private:
+        using DependencyKey = Pack<
+            central_type_t<Decoratee>,
+            ValueUnit<TagValue>
+        >;
+        
+    public:
+        using DependencyResolutionKeysOverridesPack = append_t<
+            Pack<ValueUnit<DependencyIndex>, DependencyKey>,
+            dependency_resolution_keys_overrides_pack_t<Decoratee>
+        >
     };
 }
 
