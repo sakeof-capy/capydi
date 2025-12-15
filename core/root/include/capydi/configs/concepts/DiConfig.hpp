@@ -14,7 +14,7 @@
 #include "CreationalConfig.hpp"
 
 namespace capy::di
-{
+{ 
 
 /**
  * @concept DiConfig
