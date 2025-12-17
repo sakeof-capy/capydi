@@ -4,7 +4,7 @@
 #include "capydi/utilities/pack/Pack.hpp"
 #include "capydi/utilities/Rebind.hpp"
 #include "capydi/utilities/pack/FilterMap.hpp"
-#include "capydi/utilities/pack/None.hpp"
+#include "capydi/utilities/pack/Maybe.hpp"
 #include "capydi/utilities/pack/PackZip.hpp"
 
 #include <utility>
