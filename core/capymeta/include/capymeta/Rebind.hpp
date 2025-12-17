@@ -1,9 +1,9 @@
 #ifndef REBIND_HPP_
 #define REBIND_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
+#include "capymeta/pack/Pack.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 namespace typed__

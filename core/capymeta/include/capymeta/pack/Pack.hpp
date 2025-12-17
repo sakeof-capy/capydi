@@ -18,7 +18,7 @@
 
 #include <tuple>
 
-namespace capy::di
+namespace capy::meta
 {
 
 /**

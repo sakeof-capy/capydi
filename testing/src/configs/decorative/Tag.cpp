@@ -29,7 +29,7 @@ TEST_CASE("singleton/tag")
 
     SECTION("leaf_resolution")
     {
-        using Key = capy::di::Pack<Leaf1, capy::di::ValueUnit<capy::di::TagType{123}>>;
+        using Key = capy::meta::Pack<Leaf1, capy::meta::ValueUnit<capy::di::TagType{123}>>;
 
         Resolution<Leaf1, Error> auto 
             leaf1_resolution_result = container.resolve<Leaf1, Key>();

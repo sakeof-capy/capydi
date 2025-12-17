@@ -171,12 +171,12 @@
  * 
  * ### Pack-Based Type Manipulation
  * 
- * The utilities in @c utilities/pack/ enable compile-time type filtering and rebinding:
+ * The utilities in @c capymeta/pack/ enable compile-time type filtering and rebinding:
  * 
  * @code
  * using AllConfigs = Pack<ConfigA, ConfigB, ConfigC>;
- * using CreationalOnly = filter_t<AllConfigs, IsCreationalConfig>;
- * using Dispatchers = rebind_pack_t<CreationalOnly, CreationalConfigDispatcher>;
+ * using CreationalOnly = meta::filter_t<AllConfigs, IsCreationalConfig>;
+ * using Dispatchers = meta::rebind_pack_t<CreationalOnly, CreationalConfigDispatcher>;
  * @endcode
  * 
  * @section modules Key Modules

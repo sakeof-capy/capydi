@@ -2,7 +2,7 @@
 #define DECORATOR_HPP_
 
 #include "capydi/configs/concepts/ChainableConfig.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
+#include "capydi/referencing/Reference.hpp"
 #include "capydi/configs/creational/Singleton.hpp"
 
 #include <type_traits>
@@ -13,7 +13,7 @@ namespace capy::di
 template<
     typename Decorator_,
     typename Decoratee, 
-    typename RelatedKey_ = Pack<Decoratee>, 
+    typename RelatedKey_ = meta::Pack<Decoratee>, 
     typename InnerConfig = Singleton<Decorator_>
 >
 struct Decorator
@@ -33,7 +33,7 @@ public:
     {
         auto dependencies = std::tuple { decoratee };
         Decorator_& decorator_ref = inner_config_.do_resolve(
-            Pack<Decorator_>{}, 
+            meta::Pack<Decorator_>{}, 
             dependencies
         );
         return RuntimeRef (static_cast<RelatedEntity&>(decorator_ref));

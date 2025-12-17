@@ -1,8 +1,8 @@
 #ifndef SINGLETON_HPP_
 #define SINGLETON_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/referencing/RuntimeRef.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
@@ -19,9 +19,9 @@ class Singleton
 {
 public:
     using CentralType = Type;
-    using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
-        Pack<Type>, 
-        Pack<const Type>
+    using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = meta::Pack<
+        meta::Pack<Type>, 
+        meta::Pack<const Type>
     >;
 
 public:
@@ -30,7 +30,7 @@ public:
 public:
     template<typename... Dependencies>
     RuntimeRef<Type> do_resolve(
-        Pack<Type> keys, 
+        meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
@@ -40,11 +40,11 @@ public:
 
     template<typename... Dependencies>
     RuntimeRef<const Type> do_resolve(
-        Pack<const Type> keys, 
+        meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
-        return this->do_resolve(Pack<Type>{}, dependencies);
+        return this->do_resolve(meta::Pack<Type>{}, dependencies);
     }
 };
 

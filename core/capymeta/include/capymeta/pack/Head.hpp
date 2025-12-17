@@ -4,7 +4,7 @@
 #include "Pack.hpp"
 #include "Maybe.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<typename Pack>

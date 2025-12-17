@@ -5,14 +5,14 @@
 #include "PackMap.hpp"
 #include "Head.hpp"
 #include "PackConcat.hpp"
-#include "capydi/utilities/Rebind.hpp"
+#include "capymeta/Rebind.hpp"
 
 #include <tuple>
 #include <type_traits>
 #include <functional>
 #include <expected>
 
-namespace capy::di
+namespace capy::meta
 {
 
 /// @cond HIDDEN

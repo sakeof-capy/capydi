@@ -1,17 +1,17 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
 
-#include "capydi/utilities/MetaFunctor.hpp"
-#include "capydi/utilities/pack/Filter.hpp"
-#include "capydi/utilities/pack/PackMap.hpp"
-#include "capydi/utilities/pack/Append.hpp"
-#include "capydi/utilities/Overload.hpp"
-#include "capydi/utilities/pack/Maybe.hpp"
+#include "capymeta/MetaFunctor.hpp"
+#include "capymeta/pack/Filter.hpp"
+#include "capymeta/pack/PackMap.hpp"
+#include "capymeta/pack/Append.hpp"
+#include "capymeta/Overload.hpp"
+#include "capymeta/pack/Maybe.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <concepts>
 #include <utility>
 
-using namespace capy::di;
+using namespace capy::meta;
 
 TEST_CASE("utilities:meta_functors")
 {

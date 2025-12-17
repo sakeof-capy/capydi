@@ -1,11 +1,11 @@
 #ifndef META_FUNCTOR_HPP_
 #define META_FUNCTOR_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
+#include "capymeta/pack/Pack.hpp"
 
 #include <functional>
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<auto Functor>

@@ -1,10 +1,8 @@
-set(LIBRARY_NAME capydi)
+set(LIBRARY_NAME capymeta)
 
 file(GLOB_RECURSE HEADERS include/*.hpp)
 
 add_library(${LIBRARY_NAME} INTERFACE ${HEADERS})
-
-target_link_libraries(${LIBRARY_NAME} INTERFACE capymeta)
 
 target_include_directories(${LIBRARY_NAME} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

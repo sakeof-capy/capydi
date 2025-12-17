@@ -14,9 +14,9 @@
 #define CHAINABLE_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/ChainableConfig.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/pack/Filter.hpp"
+#include "capydi/referencing/Reference.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capymeta/pack/Filter.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
@@ -35,7 +35,7 @@ private:
     using Configs::pipe...;
 
 private:
-    using ConfigsPack = Pack<Configs...>;
+    using ConfigsPack = meta::Pack<Configs...>;
 
     template<typename RelatedKey>
     struct RelatedConfigPredicate
@@ -51,7 +51,7 @@ private:
     };
 
     template<typename RelatedKey>
-    using related_configs_pack_t = filter_t<
+    using related_configs_pack_t = meta::filter_t<
         ConfigsPack, 
         RelatedConfigPredicate<RelatedKey>::template Predicate
     >;
@@ -75,7 +75,7 @@ public:
         
         #define RESOLUTION_ATTEMPT      \
             this->perform_piping(       \
-                Pack<RelatedEntity>{},   \
+                meta::Pack<RelatedEntity>{},   \
                 RelatedConfigsPack{},   \
                 entity                  \
             )
@@ -100,8 +100,8 @@ private:
     >
     [[nodiscard]] constexpr Reference<RelatedEntity> auto
         perform_piping(
-            Pack<RelatedEntity>&&,
-            Pack<HeadConfig, TailConfigs...>&&, 
+            meta::Pack<RelatedEntity>&&,
+            meta::Pack<HeadConfig, TailConfigs...>&&, 
             Reference<RelatedEntity> auto entity
         ) const 
     {
@@ -112,8 +112,8 @@ private:
             processed_entity = config.pipe(entity);
 
         return this->perform_piping(
-            Pack<RelatedEntity>{},
-            Pack<TailConfigs...>{}, 
+            meta::Pack<RelatedEntity>{},
+            meta::Pack<TailConfigs...>{}, 
             processed_entity
         );
     }
@@ -123,8 +123,8 @@ private:
     >
     [[nodiscard]] constexpr Reference<RelatedEntity> auto
         perform_piping(
-            Pack<RelatedEntity>&&,
-            Pack<>&&, 
+            meta::Pack<RelatedEntity>&&,
+            meta::Pack<>&&, 
             Reference<RelatedEntity> auto entity
         ) const 
     {

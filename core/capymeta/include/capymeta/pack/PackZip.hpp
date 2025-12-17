@@ -1,9 +1,9 @@
 #ifndef PACK_ZIP_HPP_
 #define PACK_ZIP_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
+#include "capymeta/pack/Pack.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<typename Pack1, typename Pack2>

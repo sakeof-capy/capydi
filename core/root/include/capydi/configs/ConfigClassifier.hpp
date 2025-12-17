@@ -1,11 +1,11 @@
 #ifndef CONFIG_EXTRACTOR_HPP_
 #define CONFIG_EXTRACTOR_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/Rebind.hpp"
-#include "capydi/utilities/pack/FilterMap.hpp"
-#include "capydi/utilities/pack/Maybe.hpp"
-#include "capydi/utilities/pack/PackZip.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capymeta/Rebind.hpp"
+#include "capymeta/pack/FilterMap.hpp"
+#include "capymeta/pack/Maybe.hpp"
+#include "capymeta/pack/PackZip.hpp"
 
 #include <utility>
 
@@ -45,12 +45,12 @@ namespace hidden__
         struct Mapper;
 
         template<typename Config, std::size_t Index>
-        struct Mapper<Pack<Config, ValueUnit<Index>>>
+        struct Mapper<meta::Pack<Config, meta::ValueUnit<Index>>>
         {
             using type = std::conditional_t<
                 Predicate<Config>::value,
-                ValueUnit<Index>,
-                None
+                meta::ValueUnit<Index>,
+                meta::None
             >;
         };
     };
@@ -61,18 +61,18 @@ namespace hidden__
     >
     struct ConfigsToIndexSequence
     {
-        using ConfigsPack = Pack<Configs...>;
+        using ConfigsPack = meta::Pack<Configs...>;
 
         using ConfigsIndexSequence = std::index_sequence_for<Configs...>;
         using NormalizedConfigsIndexSequence = normalize_t<ConfigsIndexSequence>;
-        using ConfigsIndicesPack = rebind_valued_as_typed_t<
+        using ConfigsIndicesPack = meta::rebind_valued_as_typed_t<
             NormalizedConfigsIndexSequence,
             NormalizedIntegerSequence,
-            Pack
+            meta::Pack
         >;
-        using ConfigsToIndicesPack = pack_zip_t<ConfigsPack, ConfigsIndicesPack>;
+        using ConfigsToIndicesPack = meta::pack_zip_t<ConfigsPack, ConfigsIndicesPack>;
         
-        using type = filter_map_t<
+        using type = meta::filter_map_t<
             ConfigsToIndicesPack,
             ConfigToIndexMapper<Predicate>::template Mapper
         >;
@@ -91,7 +91,7 @@ namespace hidden__
     template<std::size_t... Idx, typename... Configs>
     [[nodiscard]] constexpr auto
         extract_config_tuple(
-            Pack<ValueUnit<Idx>...>&&, 
+            meta::Pack<meta::ValueUnit<Idx>...>&&, 
             Configs&... configs
         )
     {
@@ -108,7 +108,7 @@ template<
 >
 [[nodiscard]] constexpr auto /* std::tuple<FiltratedConfigs...> */
     filter_configs(
-        UnaryMetaFunction<Predicate>&& predicates,
+        meta::UnaryMetaFunction<Predicate>&& predicates,
         Configs&... configs
     ) noexcept
 {

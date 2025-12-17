@@ -10,8 +10,8 @@
 #ifndef CREATIONAL_CONFIG_HPP_
 #define CREATIONAL_CONFIG_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capydi/referencing/Reference.hpp"
 
 namespace capy::di
 {
@@ -22,7 +22,7 @@ namespace capy::di
  * 
  * A CreationalConfig declares:
  * - @c CentralType: The primary type being created/managed
- * - @c ResolutionKeysPack: A Pack of types that can be used to look up this config
+ * - @c ResolutionKeysPack: A meta::Pack of types that can be used to look up this config
  * - @c CONFIG_TYPE: Must be @c ConfigType::CREATIONAL
  * - @c do_resolve(key): Method to perform the actual creation
  * 
@@ -32,7 +32,7 @@ namespace capy::di
  * @code
  * class MyFactory {
  *     using CentralType = MyService;
- *     using ResolutionKeysPack = Pack<ServiceKey, MyService>;
+ *     using ResolutionKeysPack = meta::Pack<ServiceKey, MyService>;
  *     static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
  *     
  *     std::expected<RuntimeRef<MyService>, Error> do_resolve(ServiceKey key) const {

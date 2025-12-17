@@ -3,7 +3,7 @@
 
 #include "Pack.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<

@@ -5,7 +5,7 @@
 #include "Maybe.hpp"
 #include "Prepend.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<

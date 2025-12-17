@@ -51,9 +51,9 @@
 #include "configs/concepts/DiConfig.hpp"
 #include "dispatchers/CreationalConfigDispatcher.hpp"
 #include "dispatchers/ChainableConfigDispatcher.hpp"
-#include "utilities/pack/Pack.hpp"
-#include "utilities/pack/Filter.hpp"
-#include "utilities/Rebind.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capymeta/pack/Filter.hpp"
+#include "capymeta/Rebind.hpp"
 #include "configs/ConfigClassifier.hpp"
 
 #include <tuple>
@@ -85,16 +85,16 @@ template<typename... Configs>
 class DI
 {
 private:
-    using ConfigsPack = Pack<Configs...>;
-    using CreationalConfigsPack = filter_t<ConfigsPack, IsCreationalConfig>;
-    using ChainableConfigsPack = filter_t<ConfigsPack, IsChainableConfig>;
+    using ConfigsPack = meta::Pack<Configs...>;
+    using CreationalConfigsPack = meta::filter_t<ConfigsPack, IsCreationalConfig>;
+    using ChainableConfigsPack = meta::filter_t<ConfigsPack, IsChainableConfig>;
     
-    using CreationalDispatcherType = rebind_pack_t<
+    using CreationalDispatcherType = meta::rebind_pack_t<
         CreationalConfigsPack, 
         CreationalConfigDispatcher
     >; 
     
-    using ChainableDispatcherType = rebind_pack_t<
+    using ChainableDispatcherType = meta::rebind_pack_t<
         ChainableConfigsPack, 
         ChainableConfigDispatcher
     >;
@@ -102,27 +102,27 @@ private:
 public:
     explicit constexpr DI(Configs&&... configs)
         : creational_dispatcher_ { make_dispatcher(
-            Unit<CreationalDispatcherType>{},
+            meta::Unit<CreationalDispatcherType>{},
             filter_configs(
-                UnaryMetaFunction<IsCreationalConfig>{},
+                meta::UnaryMetaFunction<IsCreationalConfig>{},
                 configs...
             )
         )}
         , chainable_dispatcher_ { make_dispatcher(
-            Unit<ChainableDispatcherType>{},
+            meta::Unit<ChainableDispatcherType>{},
             filter_configs(
-                UnaryMetaFunction<IsChainableConfig>{},
+                meta::UnaryMetaFunction<IsChainableConfig>{},
                 configs...
             )
         )}
     {}
 
 public:
-    template<Creatable Type, typename KeyPack = Pack<Type>>
+    template<Creatable Type, typename KeyPack = meta::Pack<Type>>
     [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
     {
         /* TODO: implement dispatcher for retrieving key */
-        // using /* Pack<?> */ KeyPack = Pack<Type>;
+        // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
 
         return this->creational_dispatcher_
             .template resolve<Type, KeyPack>()
@@ -136,7 +136,7 @@ private:
     template<typename Dispatcher, typename... Configs_> 
     [[nodiscard]] static constexpr Dispatcher 
         make_dispatcher(
-            Unit<Dispatcher>&&, 
+            meta::Unit<Dispatcher>&&, 
             std::tuple<Configs_...>&& configs_tuple
         )
     {

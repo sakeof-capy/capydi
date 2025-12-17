@@ -3,7 +3,7 @@
 
 #include "pack/Pack.hpp"
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<typename... Units>

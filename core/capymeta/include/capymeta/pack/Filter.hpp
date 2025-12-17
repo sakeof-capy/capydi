@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-namespace capy::di
+namespace capy::meta
 {
 
 template<

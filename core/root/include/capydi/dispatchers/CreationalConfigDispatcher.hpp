@@ -14,11 +14,11 @@
 #define CREATIONAL_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/pack/PackAlgorithm.hpp"
-#include "capydi/utilities/pack/FunctionTraits.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
-#include "capydi/utilities/referencing/RuntimeRef.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capymeta/pack/PackAlgorithm.hpp"
+#include "capymeta/pack/FunctionTraits.hpp"
+#include "capydi/referencing/Reference.hpp"
+#include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
@@ -31,7 +31,7 @@ namespace capy::di
 /// @cond IMPLEMENTATION
 
 template<typename T>
-concept Creatable = create_static_method_exists_and_is_unique_v<T>;
+concept Creatable = meta::create_static_method_exists_and_is_unique_v<T>;
 
 /// @endcond
 
@@ -60,7 +60,7 @@ private:
     using Configs::do_resolve...;
 
     template<typename T>
-    using dependencies_of_t = args_pack_t<decltype(T::create)>;
+    using dependencies_of_t = meta::args_pack_t<decltype(T::create)>;
 
 public:
     constexpr explicit CreationalConfigDispatcher(
@@ -79,11 +79,11 @@ public:
      *          - A reference to the created instance on success
      *          - An error code if creation failed or dependencies couldn't be resolved
      */
-    template<Creatable Type, typename KeyPack = Pack<Type>>
+    template<Creatable Type, typename KeyPack = meta::Pack<Type>>
     constexpr Resolution<Type, Error> auto resolve() const
     {
-        // using /* Pack<?> */ KeyPack = Pack<Type>;
-        using /* Pack<?> */ Dependencies = dependencies_of_t<Type>;
+        // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
+        using /* meta::Pack<?> */ Dependencies = dependencies_of_t<Type>;
 
         #define RESOLUTION_CALL \
             this->do_resolve(KeyPack{}, resolved_dependencies)
@@ -91,7 +91,7 @@ public:
         return 
             valued_pack_for(
                 Dependencies{},
-                [this]<typename T>(Unit<T&>) -> Resolution<T, Error> auto {
+                [this]<typename T>(meta::Unit<T&>) -> Resolution<T, Error> auto {
                     return this->resolve<T>();
                 }
             )

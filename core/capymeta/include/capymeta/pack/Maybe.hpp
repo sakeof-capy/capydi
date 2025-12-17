@@ -1,7 +1,7 @@
 #ifndef NONE_HPP_
 #define NONE_HPP_
 
-namespace capy::di
+namespace capy::meta
 {
 
 namespace hidden__

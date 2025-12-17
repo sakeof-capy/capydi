@@ -17,7 +17,7 @@
 #ifndef RESOLUTION_HPP_
 #define RESOLUTION_HPP_
 
-#include "utilities/referencing/Reference.hpp"
+#include "referencing/Reference.hpp"
 
 #include <type_traits>
 #include <expected>

@@ -1,10 +1,10 @@
 #ifndef CONSTLETON_HPP_
 #define CONSTLETON_HPP_
 
-#include "capydi/utilities/pack/Pack.hpp"
-#include "capydi/utilities/pack/PackAlgorithm.hpp"
-#include "capydi/utilities/referencing/ConstexprRef.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
+#include "capymeta/pack/Pack.hpp"
+#include "capymeta/pack/PackAlgorithm.hpp"
+#include "capydi/referencing/ConstexprRef.hpp"
+#include "capydi/referencing/Reference.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
@@ -42,8 +42,8 @@ struct Constleton
 
 public:
     using CentralType = const Type;
-    using /* Pack<Pack<?>> */ ResolutionKeysPack = Pack<
-        Pack<CentralType>
+    using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = meta::Pack<
+        meta::Pack<CentralType>
     >;
 
 public:
@@ -53,7 +53,7 @@ public:
     template<ConstexprReference... Dependencies>
     constexpr Reference<CentralType> auto
         do_resolve(
-            Pack<CentralType>&& keys, 
+            meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {

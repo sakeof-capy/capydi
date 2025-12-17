@@ -1,11 +1,11 @@
 #ifndef TAG_CONFIG_HPP_
 #define TAG_CONFIG_HPP_
 
-#include "capydi/utilities/Overload.hpp"
+#include "capymeta/Overload.hpp"
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capydi/utilities/pack/Append.hpp"
-#include "capydi/utilities/pack/PackMap.hpp"
-#include "capydi/utilities/referencing/Reference.hpp"
+#include "capymeta/pack/Append.hpp"
+#include "capymeta/pack/PackMap.hpp"
+#include "capydi/referencing/Reference.hpp"
 
 namespace capy::di
 {
@@ -40,7 +40,7 @@ namespace hidden__
         template<typename Key>
         struct TransformKey 
         {
-            using type = append_t<ValueUnit<TagValue>, Key>;
+            using type = meta::append_t<meta::ValueUnit<TagValue>, Key>;
         };
 
         template<typename Key>
@@ -48,7 +48,7 @@ namespace hidden__
 
     public:
         using CentralType = central_type_t<Decoratee>;
-        using ResolutionKeysPack = pack_map_t<KeysPack, TransformKey>;
+        using ResolutionKeysPack = meta::pack_map_t<KeysPack, TransformKey>;
 
     public:
         static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
@@ -58,8 +58,8 @@ namespace hidden__
         constexpr Reference<CentralType> auto 
             do_resolve(Args&&... args) const
         {
-            return [&, this]<typename... Keys>(Pack<Keys...>&&) {
-                return Overload {
+            return [&, this]<typename... Keys>(meta::Pack<Keys...>&&) {
+                return meta::Overload {
                     [this]<typename... Dependencies>(
                         transform_key_t<Keys>&&,
                         std::tuple<Dependencies...>& dependencies
