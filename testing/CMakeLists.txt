@@ -8,6 +8,7 @@ add_executable(${LIBRARY_NAME} ${HEADERS} ${SOURCES})
 target_link_libraries(${LIBRARY_NAME} PRIVATE 
     Catch2::Catch2WithMain 
     capydi
+    capymeta
 )
 
 target_include_directories(${LIBRARY_NAME}
