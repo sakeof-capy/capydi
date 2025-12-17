@@ -21,9 +21,9 @@ TEST_CASE("utilities:meta_functors")
         using In = Pack<int, float, int, double, int>;
         using Output = filter_t<
             In, 
-            UnaryPredicate<[]<typename T>(Unit<T>&&) {
+            MetaFunctor<[]<typename T>(Pack<T>&&) {
                 return !std::same_as<T, int>;
-            }>::template Call
+            }>::as_unary::template Functor
         >;
 
         STATIC_REQUIRE(std::same_as<Output, Pack<float, double>>);
@@ -34,19 +34,19 @@ TEST_CASE("utilities:meta_functors")
         using In = Pack<int, float, int, double, int>;
         using Output = pack_map_t<
             In, 
-            MetaUnary<
+            MetaFunctor<
                 Overload {
-                    []<typename T>(Unit<T>&&) -> ValueUnit<T{}> { 
-                        std::unreachable(); 
+                    []<typename T>(Pack<T>&&) -> ValueUnit<T{}> { 
+                        return {}; 
                     },
-                    [](Unit<int>) -> ValueUnit<1> { 
-                        std::unreachable();
+                    [](Pack<int>) -> ValueUnit<1> { 
+                        return {};
                     }
                 }
-            >::template Call
+            >::as_unary::template Functor
         >;
 
-        STATIC_REQUIRE(std::same_as<
+        static_assert(std::same_as<
             Output, 
             Pack<
                 ValueUnit<1>, 
@@ -107,21 +107,21 @@ TEST_CASE("utilities:meta_optional")
 
         using MaybeChain = 
             get_inner_t<WithInner>
-            ::template Map<MetaUnary<[]<class T>(Unit<T>) {
+            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
-            }>::template Call>
-            ::template Map<MetaUnary<[]<class T>(Unit<T>) {
+            }>>
+            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
-            }>::template Call>;
+            }>>;
 
         using MaybeNoChain = 
             get_inner_t<NoInner>
-            ::template Map<MetaUnary<[]<class T>(Unit<T>) {
+            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
-            }>::template Call>
-            ::template Map<MetaUnary<[]<class T>(Unit<T>) {
+            }>>
+            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
-            }>::template Call>;
+            }>>;
 
         STATIC_REQUIRE(std::same_as<MaybeChain, Some<Pack<int, float, double>>>);
         STATIC_REQUIRE(!MaybeNoChain::HAS_VALUE);
@@ -154,15 +154,15 @@ TEST_CASE("utilities:meta_optional")
 
         using NotFiltered = 
             get_inner_t<WithInner>
-            ::Filter<UnaryPredicate<[]<class T>(Unit<T>) {
+            ::Filter<MetaFunctor<[]<class T>(Pack<T>) {
                 return std::same_as<T, int>;
-            }>::template Call>;
+            }>>;
 
         using FilteredOut = 
             get_inner_t<WithInner>
-            ::Filter<UnaryPredicate<[]<class T>(Unit<T>) {
+            ::Filter<MetaFunctor<[]<class T>(Pack<T>) {
                 return !std::same_as<T, int>;
-            }>::template Call>;
+            }>>;
 
         STATIC_REQUIRE(std::same_as<NotFiltered, Some<int>>);
         STATIC_REQUIRE(!FilteredOut::HAS_VALUE);
