@@ -15,11 +15,11 @@
 
 #include "capydi/configs/concepts/ChainableConfig.hpp"
 #include "capydi/referencing/Reference.hpp"
-#include "capymeta/pack/Pack.hpp"
-#include "capymeta/pack/Filter.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/algorithms/pack/Filter.hpp>
 #include <concepts>
 #include <expected>
 

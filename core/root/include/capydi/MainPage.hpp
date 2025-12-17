@@ -171,7 +171,7 @@
  * 
  * ### Pack-Based Type Manipulation
  * 
- * The utilities in @c capymeta/pack/ enable compile-time type filtering and rebinding:
+ * The utilities in @c capymeta/algorithms/pack/ enable compile-time type filtering and rebinding:
  * 
  * @code
  * using AllConfigs = Pack<ConfigA, ConfigB, ConfigC>;

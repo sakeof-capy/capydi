@@ -1,7 +1,7 @@
 #ifndef PACK_ZIP_HPP_
 #define PACK_ZIP_HPP_
 
-#include "capymeta/pack/Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {

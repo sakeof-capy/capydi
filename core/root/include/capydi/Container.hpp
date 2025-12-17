@@ -51,11 +51,11 @@
 #include "configs/concepts/DiConfig.hpp"
 #include "dispatchers/CreationalConfigDispatcher.hpp"
 #include "dispatchers/ChainableConfigDispatcher.hpp"
-#include "capymeta/pack/Pack.hpp"
-#include "capymeta/pack/Filter.hpp"
-#include "capymeta/Rebind.hpp"
 #include "configs/ConfigClassifier.hpp"
 
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/algorithms/pack/Filter.hpp>
+#include <capymeta/algorithms/general/Rebind.hpp>
 #include <tuple>
 #include <utility>
 

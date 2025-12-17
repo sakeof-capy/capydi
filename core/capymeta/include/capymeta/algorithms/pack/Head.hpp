@@ -1,8 +1,8 @@
 #ifndef HEAD_HPP_
 #define HEAD_HPP_
 
-#include "Pack.hpp"
-#include "Maybe.hpp"
+#include "capymeta/primitives/Pack.hpp"
+#include "capymeta/type_structures/Maybe.hpp"
 
 namespace capy::meta
 {

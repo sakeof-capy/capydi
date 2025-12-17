@@ -1,7 +1,7 @@
 #ifndef PACK_CONCAT_HPP_
 #define PACK_CONCAT_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {

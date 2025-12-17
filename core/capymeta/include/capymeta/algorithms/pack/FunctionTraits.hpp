@@ -1,7 +1,7 @@
 #ifndef FUNCTION_TYPE_TRAITS_HPP_
 #define FUNCTION_TYPE_TRAITS_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {

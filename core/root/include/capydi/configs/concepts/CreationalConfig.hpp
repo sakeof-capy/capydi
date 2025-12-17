@@ -10,8 +10,9 @@
 #ifndef CREATIONAL_CONFIG_HPP_
 #define CREATIONAL_CONFIG_HPP_
 
-#include "capymeta/pack/Pack.hpp"
 #include "capydi/referencing/Reference.hpp"
+
+#include <capymeta/primitives/Pack.hpp>
 
 namespace capy::di
 {

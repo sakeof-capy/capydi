@@ -1,7 +1,7 @@
 #ifndef META_FUNCTOR_HPP_
 #define META_FUNCTOR_HPP_
 
-#include "capymeta/pack/Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 #include <functional>
 
@@ -12,7 +12,7 @@ template<auto Functor>
 struct MetaUnary
 {
     template<typename T>
-    struct F
+    struct Call
     {
         using type = std::invoke_result_t<
             decltype(Functor),
@@ -25,7 +25,7 @@ template<auto Functor>
 struct UnaryPredicate
 {
     template<typename T>
-    struct F
+    struct Call
     {
         static constexpr bool value = std::invoke(
             Functor,

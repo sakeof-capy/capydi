@@ -1,8 +1,8 @@
 #ifndef FILTER_FILTER_MAP_HPP_
 #define FILTER_FILTER_MAP_HPP_
 
-#include "Pack.hpp"
-#include "Maybe.hpp"
+#include "capymeta/primitives/Pack.hpp"
+#include "capymeta/type_structures/Maybe.hpp"
 #include "Prepend.hpp"
 
 namespace capy::meta

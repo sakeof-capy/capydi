@@ -14,14 +14,14 @@
 #define CREATIONAL_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capymeta/pack/Pack.hpp"
-#include "capymeta/pack/PackAlgorithm.hpp"
-#include "capymeta/pack/FunctionTraits.hpp"
 #include "capydi/referencing/Reference.hpp"
 #include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/algorithms/pack/PackAlgorithm.hpp>
+#include <capymeta/algorithms/pack/FunctionTraits.hpp>
 #include <expected>
 #include <tuple>
 

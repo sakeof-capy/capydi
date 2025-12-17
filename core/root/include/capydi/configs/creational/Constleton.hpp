@@ -1,13 +1,13 @@
 #ifndef CONSTLETON_HPP_
 #define CONSTLETON_HPP_
 
-#include "capymeta/pack/Pack.hpp"
-#include "capymeta/pack/PackAlgorithm.hpp"
 #include "capydi/referencing/ConstexprRef.hpp"
 #include "capydi/referencing/Reference.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/algorithms/pack/PackAlgorithm.hpp>
 #include <tuple>
 #include <type_traits>
 

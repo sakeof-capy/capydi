@@ -1,11 +1,11 @@
 #ifndef SINGLETON_HPP_
 #define SINGLETON_HPP_
 
-#include "capymeta/pack/Pack.hpp"
 #include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 
 namespace capy::di

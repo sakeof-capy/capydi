@@ -1,11 +1,11 @@
 #ifndef PACK_ALGORITHM_HPP_
 #define PACK_ALGORITHM_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 #include "PackMap.hpp"
 #include "Head.hpp"
 #include "PackConcat.hpp"
-#include "capymeta/Rebind.hpp"
+#include "capymeta/algorithms/general/Rebind.hpp"
 
 #include <tuple>
 #include <type_traits>

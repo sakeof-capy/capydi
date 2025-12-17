@@ -1,11 +1,12 @@
 #ifndef TAG_CONFIG_HPP_
 #define TAG_CONFIG_HPP_
 
-#include "capymeta/Overload.hpp"
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capymeta/pack/Append.hpp"
-#include "capymeta/pack/PackMap.hpp"
 #include "capydi/referencing/Reference.hpp"
+
+#include <capymeta/algorithms/pack/Append.hpp>
+#include <capymeta/algorithms/pack/PackMap.hpp>
+#include <capymeta/primitives/Overload.hpp>
 
 namespace capy::di
 {

@@ -1,7 +1,7 @@
 #ifndef FILTER_HPP_
 #define FILTER_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 #include "Prepend.hpp"
 
 #include <type_traits>

@@ -1,11 +1,11 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
 
-#include "capymeta/MetaFunctor.hpp"
-#include "capymeta/pack/Filter.hpp"
-#include "capymeta/pack/PackMap.hpp"
-#include "capymeta/pack/Append.hpp"
-#include "capymeta/Overload.hpp"
-#include "capymeta/pack/Maybe.hpp"
+#include "capymeta/primitives/MetaFunctor.hpp"
+#include "capymeta/algorithms/pack/Filter.hpp"
+#include "capymeta/algorithms/pack/PackMap.hpp"
+#include "capymeta/algorithms/pack/Append.hpp"
+#include "capymeta/primitives/Overload.hpp"
+#include "capymeta/type_structures/Maybe.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <concepts>
@@ -23,7 +23,7 @@ TEST_CASE("utilities:meta_functors")
             In, 
             UnaryPredicate<[]<typename T>(Unit<T>&&) {
                 return !std::same_as<T, int>;
-            }>::template F
+            }>::template Call
         >;
 
         STATIC_REQUIRE(std::same_as<Output, Pack<float, double>>);
@@ -43,7 +43,7 @@ TEST_CASE("utilities:meta_functors")
                         std::unreachable();
                     }
                 }
-            >::template F
+            >::template Call
         >;
 
         STATIC_REQUIRE(std::same_as<
@@ -109,19 +109,19 @@ TEST_CASE("utilities:meta_optional")
             get_inner_t<WithInner>
             ::template Map<MetaUnary<[]<class T>(Unit<T>) {
                 return Pack<T, float>{};
-            }>::template F>
+            }>::template Call>
             ::template Map<MetaUnary<[]<class T>(Unit<T>) {
                 return append_t<double, T>{};
-            }>::template F>;
+            }>::template Call>;
 
         using MaybeNoChain = 
             get_inner_t<NoInner>
             ::template Map<MetaUnary<[]<class T>(Unit<T>) {
                 return Pack<T, float>{};
-            }>::template F>
+            }>::template Call>
             ::template Map<MetaUnary<[]<class T>(Unit<T>) {
                 return append_t<double, T>{};
-            }>::template F>;
+            }>::template Call>;
 
         STATIC_REQUIRE(std::same_as<MaybeChain, Some<Pack<int, float, double>>>);
         STATIC_REQUIRE(!MaybeNoChain::HAS_VALUE);
@@ -156,13 +156,13 @@ TEST_CASE("utilities:meta_optional")
             get_inner_t<WithInner>
             ::Filter<UnaryPredicate<[]<class T>(Unit<T>) {
                 return std::same_as<T, int>;
-            }>::template F>;
+            }>::template Call>;
 
         using FilteredOut = 
             get_inner_t<WithInner>
             ::Filter<UnaryPredicate<[]<class T>(Unit<T>) {
                 return !std::same_as<T, int>;
-            }>::template F>;
+            }>::template Call>;
 
         STATIC_REQUIRE(std::same_as<NotFiltered, Some<int>>);
         STATIC_REQUIRE(!FilteredOut::HAS_VALUE);

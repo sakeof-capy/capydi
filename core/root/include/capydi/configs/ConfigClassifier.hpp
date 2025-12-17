@@ -1,12 +1,11 @@
 #ifndef CONFIG_EXTRACTOR_HPP_
 #define CONFIG_EXTRACTOR_HPP_
 
-#include "capymeta/pack/Pack.hpp"
-#include "capymeta/Rebind.hpp"
-#include "capymeta/pack/FilterMap.hpp"
-#include "capymeta/pack/Maybe.hpp"
-#include "capymeta/pack/PackZip.hpp"
-
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/algorithms/general/Rebind.hpp>
+#include <capymeta/algorithms/pack/FilterMap.hpp>
+#include <capymeta/type_structures/Maybe.hpp>
+#include <capymeta/algorithms/pack/PackZip.hpp>
 #include <utility>
 
 namespace capy::di

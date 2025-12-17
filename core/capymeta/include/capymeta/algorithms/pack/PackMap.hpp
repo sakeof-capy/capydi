@@ -1,7 +1,7 @@
 #ifndef MAP_PACK_HPP_
 #define MAP_PACK_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {

@@ -1,7 +1,7 @@
 #ifndef PREPEND_HPP_
 #define PREPEND_HPP_
 
-#include "Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {

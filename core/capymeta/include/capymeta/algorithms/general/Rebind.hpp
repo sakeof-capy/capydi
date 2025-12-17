@@ -1,7 +1,7 @@
 #ifndef REBIND_HPP_
 #define REBIND_HPP_
 
-#include "capymeta/pack/Pack.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
 namespace capy::meta
 {
