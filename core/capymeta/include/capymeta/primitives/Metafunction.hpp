@@ -2,10 +2,12 @@
 #define META_FUNCTOR_HPP_
 
 #include "capymeta/primitives/Pack.hpp"
+#include "capymeta/concepts/MetaCallable.hpp"
 
 #include <functional>
 #include <concepts>
 #include <cstddef>
+#include <array>
 
 namespace capy::meta
 {
@@ -17,16 +19,50 @@ namespace hidden__
 }
 
 template<auto Functor_>
-struct MetaFunctor
+struct TypeMetafunction
 {
 private:
-    using SelfType = MetaFunctor<Functor_>;
+    using SelfType = TypeMetafunction<Functor_>;
 
 public:
     using as_unary = typename hidden__::AsNary<1, SelfType>;
 
     template<std::size_t ARITY>
     using as_nary = typename hidden__::AsNary<ARITY, SelfType>;
+
+public:
+    static constexpr std::array META_CALLABLE_TAGS = { 
+        MetaCallableTag::TYPE_CALLABLE 
+    };
+
+public:
+    template<typename... Args>
+        requires std::invocable<decltype(Functor_), Pack<Args...>>
+    struct Functor
+    {
+    public:
+        using ReturnType = std::invoke_result_t<decltype(Functor_), Pack<Args...>>;
+        using type = ReturnType;
+    };
+};
+
+template<auto Functor_>
+struct ValueMetafunction
+{
+private:
+    using SelfType = ValueMetafunction<Functor_>;
+
+public:
+    using as_unary = typename hidden__::AsNary<1, SelfType>;
+
+    template<std::size_t ARITY>
+    using as_nary = typename hidden__::AsNary<ARITY, SelfType>;
+
+public:
+    static constexpr std::array META_CALLABLE_TAGS = { 
+        MetaCallableTag::TYPE_CALLABLE,
+        MetaCallableTag::VALUE_CALLABLE
+    };
 
 public:
     template<typename... Args>
@@ -161,16 +197,7 @@ namespace hidden__
             T7, T8
         >;
     };
-
-    template<typename MetaFunctor_, typename... Args>
-    using functor_call_t = MetaFunctor_::template Functor<Args...>;
 }
-
-template<typename MetaFunctor_, typename... Args>
-constexpr auto call_v = hidden__::functor_call_t<MetaFunctor_, Args...>::value;
-
-template<typename MetaFunctor_, typename... Args>
-using call_t = typename hidden__::functor_call_t<MetaFunctor_, Args...>::type;
 
 }
 

@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
 
-#include "capymeta/primitives/MetaFunctor.hpp"
+#include "capymeta/primitives/Metafunction.hpp"
 #include "capymeta/algorithms/pack/Filter.hpp"
 #include "capymeta/algorithms/pack/PackMap.hpp"
 #include "capymeta/algorithms/pack/Append.hpp"
@@ -21,7 +21,7 @@ TEST_CASE("utilities:meta_functors")
         using In = Pack<int, float, int, double, int>;
         using Output = filter_t<
             In, 
-            MetaFunctor<[]<typename T>(Pack<T>&&) {
+            ValueMetafunction<[]<typename T>(Pack<T>&&) {
                 return !std::same_as<T, int>;
             }>::as_unary::template Functor
         >;
@@ -34,7 +34,7 @@ TEST_CASE("utilities:meta_functors")
         using In = Pack<int, float, int, double, int>;
         using Output = pack_map_t<
             In, 
-            MetaFunctor<
+            TypeMetafunction<
                 Overload {
                     []<typename T>(Pack<T>&&) -> ValueUnit<T{}> { 
                         return {}; 
@@ -107,19 +107,19 @@ TEST_CASE("utilities:meta_optional")
 
         using MaybeChain = 
             get_inner_t<WithInner>
-            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
+            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
             }>>
-            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
+            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
             }>>;
 
         using MaybeNoChain = 
             get_inner_t<NoInner>
-            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
+            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
             }>>
-            ::template Map<MetaFunctor<[]<class T>(Pack<T>) {
+            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
             }>>;
 
@@ -154,13 +154,13 @@ TEST_CASE("utilities:meta_optional")
 
         using NotFiltered = 
             get_inner_t<WithInner>
-            ::Filter<MetaFunctor<[]<class T>(Pack<T>) {
+            ::Filter<ValueMetafunction<[]<class T>(Pack<T>) {
                 return std::same_as<T, int>;
             }>>;
 
         using FilteredOut = 
             get_inner_t<WithInner>
-            ::Filter<MetaFunctor<[]<class T>(Pack<T>) {
+            ::Filter<ValueMetafunction<[]<class T>(Pack<T>) {
                 return !std::same_as<T, int>;
             }>>;
 

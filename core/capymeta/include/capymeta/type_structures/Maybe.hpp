@@ -1,7 +1,7 @@
 #ifndef NONE_HPP_
 #define NONE_HPP_
 
-#include "capymeta/primitives/MetaFunctor.hpp"
+#include "capymeta/concepts/MetaCallable.hpp"
 
 namespace capy::meta
 {
@@ -27,17 +27,17 @@ struct Maybe
 
     using Value = T;
 
-    template<typename Mapper>
+    template<TypeMetaCallable Mapper>
     using Map = Maybe<call_t<Mapper, T>>;
 
-    template<typename Predicate>
+    template<ValueMetaCallable Predicate>
     using Filter = std::conditional_t<
         call_v<Predicate, T>,
         Some<T>,
         None
     >;
 
-    template<typename Mapper>
+    template<TypeMetaCallable Mapper>
     using AndThen = call_t<Mapper, T>;
 
     template<typename OtherValue>
@@ -51,13 +51,13 @@ struct Maybe<hidden__::Nullopt>
 
     using Value = hidden__::Nullopt;
 
-    template<typename Mapper>
+    template<TypeMetaCallable Mapper>
     using Map = None;
 
-    template<typename Predicate>
+    template<ValueMetaCallable Predicate>
     using Filter = None;
 
-    template<typename Mapper>
+    template<TypeMetaCallable Mapper>
     using AndThen = None;
 
     template<typename OtherValue>
