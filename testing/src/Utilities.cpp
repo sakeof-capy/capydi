@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
 
-#include "capymeta/primitives/Metafunction.hpp"
+#include "capymeta/primitives/Template.hpp"
+#include "capymeta/primitives/Functor.hpp"
 #include "capymeta/algorithms/pack/Filter.hpp"
 #include "capymeta/algorithms/pack/PackMap.hpp"
 #include "capymeta/algorithms/pack/Append.hpp"
@@ -13,15 +14,51 @@
 
 using namespace capy::meta;
 
+template<typename T, typename T2, typename...>
+struct Pred
+{
+    static constexpr bool value = std::same_as<T, int>;
+};
+
+template<typename T, typename T2>
+struct Pred2
+{
+    static constexpr bool value = std::same_as<T, int>;
+};
+
 TEST_CASE("utilities:meta_functors")
 {
-    
+    SECTION("template_matchers:unify")
+    {
+        using f = template_fv<Pred>;
+        STATIC_REQUIRE(call_v<f, int, double, float>);
+        STATIC_REQUIRE(!call_v<f, double, double, float>);
+
+        using f2 = template_fv<Pred>;
+        STATIC_REQUIRE(call_v<f2, int, double, float>);
+        STATIC_REQUIRE(!call_v<f2, double, double, float>);
+
+        using f3 = template_fv<Pred2>;
+        STATIC_REQUIRE(call_v<f3, int, double>);
+        STATIC_REQUIRE(!call_v<f3, double, double>);
+
+        using f4 = functor_fv<[]<typename T>(Pack<T>) { 
+            return std::same_as<T, int>; 
+        }>;
+
+        STATIC_REQUIRE(call_v<f4, int>);
+        STATIC_REQUIRE(!call_v<f4, double>);
+        
+        STATIC_REQUIRE(call_v<f4, int>);
+        STATIC_REQUIRE(!call_v<f4, double>);
+    }
+
     SECTION("meta_predicate:filter")
     {
         using In = Pack<int, float, int, double, int>;
         using Output = filter_t<
             In, 
-            ValueMetafunction<[]<typename T>(Pack<T>&&) {
+            functor_fv<[]<typename T>(Pack<T>&&) {
                 return !std::same_as<T, int>;
             }>::as_unary::template Functor
         >;
@@ -34,7 +71,7 @@ TEST_CASE("utilities:meta_functors")
         using In = Pack<int, float, int, double, int>;
         using Output = pack_map_t<
             In, 
-            TypeMetafunction<
+            functor_ft<
                 Overload {
                     []<typename T>(Pack<T>&&) -> ValueUnit<T{}> { 
                         return {}; 
@@ -107,19 +144,19 @@ TEST_CASE("utilities:meta_optional")
 
         using MaybeChain = 
             get_inner_t<WithInner>
-            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
+            ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
             }>>
-            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
+            ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
             }>>;
 
         using MaybeNoChain = 
             get_inner_t<NoInner>
-            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
+            ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
             }>>
-            ::template Map<TypeMetafunction<[]<class T>(Pack<T>) {
+            ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
             }>>;
 
@@ -154,13 +191,13 @@ TEST_CASE("utilities:meta_optional")
 
         using NotFiltered = 
             get_inner_t<WithInner>
-            ::Filter<ValueMetafunction<[]<class T>(Pack<T>) {
+            ::Filter<functor_fv<[]<class T>(Pack<T>) {
                 return std::same_as<T, int>;
             }>>;
 
         using FilteredOut = 
             get_inner_t<WithInner>
-            ::Filter<ValueMetafunction<[]<class T>(Pack<T>) {
+            ::Filter<functor_fv<[]<class T>(Pack<T>) {
                 return !std::same_as<T, int>;
             }>>;
 

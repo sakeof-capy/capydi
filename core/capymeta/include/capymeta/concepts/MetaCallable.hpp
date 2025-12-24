@@ -38,7 +38,7 @@ concept MetaCallable = requires {
 };
 
 template<typename T>
-concept TypeMetaCallable 
+concept TypeMetaCallable
     =   MetaCallable<T>
     &&  hidden__::TaggedWith<T, MetaCallableTag::TYPE_CALLABLE>;
 
@@ -47,11 +47,11 @@ concept ValueMetaCallable
     =   MetaCallable<T>
     &&  hidden__::TaggedWith<T, MetaCallableTag::VALUE_CALLABLE>;
 
-template<TypeMetaCallable MetaFunctor_, typename... Args>
-using call_t = typename hidden__::functor_call_t<MetaFunctor_, Args...>::type;
+template<TypeMetaCallable MetaFunctor, typename... Args>
+using call_t = typename hidden__::functor_call_t<MetaFunctor, Args...>::type;
 
-template<ValueMetaCallable MetaFunctor_, typename... Args>
-constexpr auto call_v = hidden__::functor_call_t<MetaFunctor_, Args...>::value;
+template<ValueMetaCallable MetaFunctor, typename... Args>
+constexpr auto call_v = hidden__::functor_call_t<MetaFunctor, Args...>::value;
 
 }
 
