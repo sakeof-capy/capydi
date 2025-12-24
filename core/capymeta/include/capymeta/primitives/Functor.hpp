@@ -3,6 +3,7 @@
 
 #include "capymeta/concepts/MetaCallable.hpp"
 #include "capymeta/primitives/FixTemplateArity.hpp"
+#include "capymeta/primitives/MetaArity.hpp"
 
 #include <cstddef>
 #include <array>
@@ -29,10 +30,10 @@ public:
     };
 
 public:
-    template<TemplateArity ARITY>
+    template<MetaArity ARITY>
     using as_nary = fix_template_arity_ft<ARITY, Functor>;
 
-    using as_unary = as_nary<TemplateArity::N1>;
+    using as_unary = as_nary<MetaArity::N1>;
 };
 
 template<auto Functor_>
@@ -63,10 +64,10 @@ public:
     };
 
 public:
-    template<TemplateArity ARITY>
+    template<MetaArity ARITY>
     using as_nary = fix_template_arity_fv<ARITY, Functor>;
 
-    using as_unary = as_nary<TemplateArity::N1>;
+    using as_unary = as_nary<MetaArity::N1>;
 };
 
 }
