@@ -1,8 +1,8 @@
 #ifndef META_FUNCTION_HPP_
 #define META_FUNCTION_HPP_
 
-#include "capymeta/concepts/MetaCallable.hpp"
-#include "capymeta/primitives/FixTemplateArity.hpp"
+#include "capymeta/concepts/Trait.hpp"
+#include "capymeta/primitives/FixTemplateMetaArity.hpp"
 #include "capymeta/primitives/MetaArity.hpp"
 
 #include <cstddef>
@@ -12,7 +12,11 @@
 namespace capy::meta
 {
 
-template<auto Functor_>
+template<
+    auto Functor_,
+    MetaArity REQUIRED_ARITY,
+    MetaArity... OPTIONAL_ARITIES
+>
 struct functor_ft
 {
 public:
@@ -20,6 +24,11 @@ public:
         MetaCallableTag::TYPE_CALLABLE 
     };
 
+    static constexpr std::array META_CALLABLE_ARITIES = {
+        REQUIRED_ARITY,
+        OPTIONAL_ARITIES...
+    };
+    
 public:
     template<typename... Args>
         requires std::invocable<decltype(Functor_), Pack<Args...>>
@@ -36,13 +45,22 @@ public:
     using as_unary = as_nary<MetaArity::N1>;
 };
 
-template<auto Functor_>
+template<
+    auto Functor_,
+    MetaArity REQUIRED_ARITY,
+    MetaArity... OPTIONAL_ARITIES
+>
 struct functor_fv
 {
 public:
     static constexpr std::array META_CALLABLE_TAGS = { 
         MetaCallableTag::TYPE_CALLABLE,
         MetaCallableTag::VALUE_CALLABLE
+    };
+    
+    static constexpr std::array META_CALLABLE_ARITIES = {
+        REQUIRED_ARITY,
+        OPTIONAL_ARITIES...
     };
 
 public:

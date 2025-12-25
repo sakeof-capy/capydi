@@ -30,21 +30,21 @@ TEST_CASE("utilities:meta_functors")
 {
     SECTION("template_matchers:unify")
     {
-        using f = template_fv<Pred>;
+        using f = template_fv<Pred, MetaArity::N3>;
         STATIC_REQUIRE(call_v<f, int, double, float>);
         STATIC_REQUIRE(!call_v<f, double, double, float>);
 
-        using f2 = template_fv<Pred>;
+        using f2 = template_fv<Pred, MetaArity::N3>;
         STATIC_REQUIRE(call_v<f2, int, double, float>);
         STATIC_REQUIRE(!call_v<f2, double, double, float>);
 
-        using f3 = template_fv<Pred2>;
+        using f3 = template_fv<Pred2, MetaArity::N2>;
         STATIC_REQUIRE(call_v<f3, int, double>);
         STATIC_REQUIRE(!call_v<f3, double, double>);
 
         using f4 = functor_fv<[]<typename T>(Pack<T>) { 
             return std::same_as<T, int>; 
-        }>;
+        }, MetaArity::N1>;
 
         STATIC_REQUIRE(call_v<f4, int>);
         STATIC_REQUIRE(!call_v<f4, double>);
@@ -60,7 +60,7 @@ TEST_CASE("utilities:meta_functors")
             In, 
             functor_fv<[]<typename T>(Pack<T>&&) {
                 return !std::same_as<T, int>;
-            }>::as_unary::template Functor
+            }, MetaArity::N1>::as_unary::template Functor
         >;
 
         STATIC_REQUIRE(std::same_as<Output, Pack<float, double>>);
@@ -79,7 +79,8 @@ TEST_CASE("utilities:meta_functors")
                     [](Pack<int>) -> ValueUnit<1> { 
                         return {};
                     }
-                }
+                },
+                MetaArity::N1
             >::as_unary::template Functor
         >;
 
@@ -146,19 +147,19 @@ TEST_CASE("utilities:meta_optional")
             get_inner_t<WithInner>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
-            }>>
+            }, MetaArity::N1>>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
-            }>>;
+            }, MetaArity::N1>>;
 
         using MaybeNoChain = 
             get_inner_t<NoInner>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
-            }>>
+            }, MetaArity::N1>>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return append_t<double, T>{};
-            }>>;
+            }, MetaArity::N1>>;
 
         STATIC_REQUIRE(std::same_as<MaybeChain, Some<Pack<int, float, double>>>);
         STATIC_REQUIRE(!MaybeNoChain::HAS_VALUE);
@@ -193,13 +194,13 @@ TEST_CASE("utilities:meta_optional")
             get_inner_t<WithInner>
             ::Filter<functor_fv<[]<class T>(Pack<T>) {
                 return std::same_as<T, int>;
-            }>>;
+            }, MetaArity::N1>>;
 
         using FilteredOut = 
             get_inner_t<WithInner>
             ::Filter<functor_fv<[]<class T>(Pack<T>) {
                 return !std::same_as<T, int>;
-            }>>;
+            }, MetaArity::N1>>;
 
         STATIC_REQUIRE(std::same_as<NotFiltered, Some<int>>);
         STATIC_REQUIRE(!FilteredOut::HAS_VALUE);

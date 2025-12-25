@@ -22,11 +22,11 @@ struct FixTemplateArityValued;
 
 #define PACK(...) __VA_ARGS__
 
-#define DEUNIFY_TEMPLATE(MetaArity, TemplateType, ExpandedArgs)     \
+#define DEUNIFY_TEMPLATE(MetaArity, TemplateType, ExpandedArgs) \
     template<                                                   \
         template<typename...> typename Template                 \
     >                                                           \
-    struct FixTemplateArityTyped<MetaArity, Template>               \
+    struct FixTemplateArityTyped<MetaArity, Template>           \
     {                                                           \
         TemplateType                                            \
         struct Functor                                          \
@@ -38,7 +38,7 @@ struct FixTemplateArityValued;
     template<                                                   \
         template<typename...> typename Template                 \
     >                                                           \
-    struct FixTemplateArityValued<MetaArity, Template>              \
+    struct FixTemplateArityValued<MetaArity, Template>          \
     {                                                           \
         TemplateType                                            \
         struct Functor                                          \

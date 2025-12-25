@@ -1,7 +1,7 @@
 #ifndef NONE_HPP_
 #define NONE_HPP_
 
-#include "capymeta/concepts/MetaCallable.hpp"
+#include "capymeta/concepts/Trait.hpp"
 
 namespace capy::meta
 {
@@ -27,17 +27,17 @@ struct Maybe
 
     using Value = T;
 
-    template<TypeMetaCallable Mapper>
+    template<t_trait<MetaArity::N1> Mapper>
     using Map = Maybe<call_t<Mapper, T>>;
 
-    template<ValueMetaCallable Predicate>
+    template<v_trait<MetaArity::N1> Predicate>
     using Filter = std::conditional_t<
         call_v<Predicate, T>,
         Some<T>,
         None
     >;
 
-    template<TypeMetaCallable Mapper>
+    template<t_trait<MetaArity::N1> Mapper>
     using AndThen = call_t<Mapper, T>;
 
     template<typename OtherValue>
@@ -51,13 +51,13 @@ struct Maybe<hidden__::Nullopt>
 
     using Value = hidden__::Nullopt;
 
-    template<TypeMetaCallable Mapper>
+    template<t_trait<MetaArity::N1> Mapper>
     using Map = None;
 
-    template<ValueMetaCallable Predicate>
+    template<v_trait<MetaArity::N1> Predicate>
     using Filter = None;
 
-    template<TypeMetaCallable Mapper>
+    template<t_trait<MetaArity::N1> Mapper>
     using AndThen = None;
 
     template<typename OtherValue>
