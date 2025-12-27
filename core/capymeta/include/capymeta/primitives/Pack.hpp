@@ -64,6 +64,11 @@ struct Unit {};
 template<typename... Types>
 struct Pack {};
 
+template<typename Pack_>
+constexpr std::size_t pack_size_v = []<typename... Types>(Pack<Types...>&&) {
+    return sizeof...(Types);
+}(Pack_{});
+
 /**
  * @class ValueUnit
  * @brief A wrapper for non-type template parameter values.

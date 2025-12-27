@@ -33,12 +33,23 @@ constexpr std::size_t MAX_LINEAR_META_ARITY = static_cast<std::size_t>(
     MetaArity::LINEAR_ARITIES_COUNT
 );
 
+consteval std::optional<MetaArity>
+    meta_arity_from_args_count(const std::size_t args_count)
+{
+    if (args_count < 1 || args_count > MAX_LINEAR_META_ARITY) {
+        return std::nullopt;
+    }
+
+    return static_cast<MetaArity>(args_count - 1);
+}
+
+template<std::size_t ARGS_COUNT>
+    requires (meta_arity_from_args_count(ARGS_COUNT).has_value())
+constexpr MetaArity meta_arity_from_args_count_v
+    = meta_arity_from_args_count(ARGS_COUNT).value();
+
 template<typename... Args>
-    requires (
-        sizeof...(Args) > 0 && 
-        sizeof...(Args) <= MAX_LINEAR_META_ARITY
-    )
-constexpr MetaArity meta_arity_from_args_v = static_cast<MetaArity>(sizeof...(Args) - 1);
+constexpr MetaArity meta_arity_from_args_v = meta_arity_from_args_count_v<sizeof...(Args)>;
     
 }
 
