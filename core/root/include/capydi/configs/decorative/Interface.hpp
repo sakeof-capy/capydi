@@ -6,7 +6,7 @@ namespace capy::di
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<typename Interface, typename Decoratee>
     class InterfaceDecorator;
@@ -18,12 +18,12 @@ template<typename InterfaceType>
 struct Interface
 {
     template<typename Decoratee>
-    using Decorator = hidden__::InterfaceDecorator<InterfaceType, Decoratee>;
+    using Decorator = implementation_details_::InterfaceDecorator<InterfaceType, Decoratee>;
 };
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<typename Interface, typename Decoratee>
     class InterfaceDecorator : public Decoratee

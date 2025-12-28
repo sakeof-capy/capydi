@@ -27,7 +27,7 @@ namespace capy::di
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<typename T>
     struct IsWrappedWithExpected : std::false_type {};
@@ -78,7 +78,7 @@ namespace hidden__
  */
 template<typename T, typename Dependency, typename Error_>
 concept Resolution 
-    =   hidden__::is_wrapped_with_expected<T> 
+    =   implementation_details_::is_wrapped_with_expected<T> 
     &&  Reference<typename T::value_type, Dependency> 
     &&  std::same_as<typename T::error_type, Error_>;
 

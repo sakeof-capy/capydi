@@ -13,7 +13,7 @@ namespace capy::di
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<auto... Values>
     struct NormalizedIntegerSequence {};
@@ -115,12 +115,12 @@ template<
     ) noexcept
 {
     using ConfigsIndexSequencePack = 
-        hidden__::configs_to_index_sequence_pack_t<
+        implementation_details_::configs_to_index_sequence_pack_t<
             Predicate,
             Configs...
         >;
 
-    return hidden__::extract_config_tuple(
+    return implementation_details_::extract_config_tuple(
         ConfigsIndexSequencePack{},
         configs...
     );

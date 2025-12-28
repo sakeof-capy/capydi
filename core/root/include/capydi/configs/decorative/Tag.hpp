@@ -16,7 +16,7 @@ using TagType = std::size_t;
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<TagType TagValue, CreationalConfig Decoratee>
     class TagDecorator;
@@ -28,10 +28,10 @@ template<TagType TagValue>
 struct Tag
 {
     template<CreationalConfig Decoratee>
-    using Decorator = hidden__::TagDecorator<TagValue, Decoratee>;
+    using Decorator = implementation_details_::TagDecorator<TagValue, Decoratee>;
 };
 
-namespace hidden__
+namespace implementation_details_
 {
     template<TagType TagValue, CreationalConfig Decoratee>
     class TagDecorator
