@@ -11,6 +11,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <concepts>
 #include <utility>
+#include <type_traits>
 
 using namespace capy::meta;
 
@@ -84,7 +85,7 @@ TEST_CASE("utilities:meta_functors")
             >
         >;
 
-        static_assert(std::same_as<
+        STATIC_REQUIRE(std::same_as<
             Output, 
             Pack<
                 ValueUnit<1>, 
@@ -204,5 +205,51 @@ TEST_CASE("utilities:meta_optional")
 
         STATIC_REQUIRE(std::same_as<NotFiltered, Some<int>>);
         STATIC_REQUIRE(!FilteredOut::HAS_VALUE);
+    }
+
+    SECTION("maybe:central_application")
+    {
+        struct WithInner
+        {
+            using Inner = Pack<int, float>;
+        };
+
+        struct NoInner{};
+
+        // {
+        //     using MaybeInner = get_inner_t<NoInner>;
+        //     using Result = std::conditional_t<
+        //         std::same_as<MaybeInner, None>,
+        //         None,
+        //         pack_append_t<MaybeInner, double>
+        //     >;
+        // }
+
+        {
+            using Result =
+                get_inner_t<NoInner>
+                ::Map<functor_ft<[]<class T>(Pack<T>) {
+                    return pack_append_t<T, double>{};
+                }, MetaArity::N1>>;
+
+            STATIC_REQUIRE(!Result::HAS_VALUE);
+        }
+
+        {
+            using Result =
+                get_inner_t<WithInner>
+                ::Map<functor_ft<[]<class T>(Pack<T>) {
+                    return pack_append_t<T, double>{};
+                }, MetaArity::N1>>;
+
+            STATIC_REQUIRE(Result::HAS_VALUE);
+            STATIC_REQUIRE(std::same_as<
+                Result::Value,
+                Pack<int, float, double>
+            >);
+        }
+
+
+
     }
 }

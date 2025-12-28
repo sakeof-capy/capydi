@@ -8,16 +8,16 @@ namespace capy::meta
 
 namespace implementation_details_
 {
-    struct Nullopt{};
+    struct Nil {};
 }
 
 template<typename T>
 struct Maybe;
 
-using None = Maybe<implementation_details_::Nullopt>;
+using None = Maybe<implementation_details_::Nil>;
 
 template<typename T>
-    requires (!std::same_as<implementation_details_::Nullopt, T>)
+    requires (!std::same_as<implementation_details_::Nil, T>)
 using Some = Maybe<T>;
 
 template<typename T>
@@ -45,11 +45,11 @@ struct Maybe
 };
 
 template<>
-struct Maybe<implementation_details_::Nullopt>
+struct Maybe<implementation_details_::Nil>
 {
     static constexpr bool HAS_VALUE = false;
 
-    using Value = implementation_details_::Nullopt;
+    using Value = implementation_details_::Nil;
 
     template<t_trait<MetaArity::N1> Mapper>
     using Map = None;
