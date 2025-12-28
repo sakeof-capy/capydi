@@ -14,16 +14,14 @@
 #define CREATIONAL_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capydi/referencing/Reference.hpp"
 #include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
-#include <capymeta/algorithms/pack/PackAlgorithm.hpp>
-#include <capymeta/algorithms/pack/FunctionTraits.hpp>
+#include <capymeta/algorithms/pack/ValuedPackFor.hpp>
+#include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <expected>
-#include <tuple>
 
 namespace capy::di
 {
@@ -89,7 +87,7 @@ public:
             this->do_resolve(KeyPack{}, resolved_dependencies)
 
         return 
-            valued_pack_for(
+            meta::valued_pack_for(
                 Dependencies{},
                 [this]<typename T>(meta::Unit<T&>) -> Resolution<T, Error> auto {
                     return this->resolve<T>();

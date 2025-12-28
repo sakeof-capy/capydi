@@ -1,23 +1,14 @@
-#ifndef APPEND_HPP_
-#define APPEND_HPP_
+#ifndef CAPYDI_APPEND_HPP
+#define CAPYDI_APPEND_HPP
 
-#include "capymeta/primitives/Pack.hpp"
+#include "legacy/Append.hpp"
 
 namespace capy::meta
 {
 
 template<typename Element, typename Pack>
-struct Append;
-
-template<typename Element, typename... PackElements>
-struct Append<Element, Pack<PackElements...>> 
-{
-    using type = Pack<PackElements..., Element>;
-};
-
-template<typename Element, typename Pack>
-using append_t = typename Append<Element, Pack>::type;
+using pack_append_t = legacy::append_t<Pack, Element>;
 
 }
 
-#endif // !APPEND_HPP_
+#endif //CAPYDI_APPEND_HPP

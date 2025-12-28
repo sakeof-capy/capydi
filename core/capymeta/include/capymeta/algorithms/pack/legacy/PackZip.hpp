@@ -3,7 +3,7 @@
 
 #include "capymeta/primitives/Pack.hpp"
 
-namespace capy::meta
+namespace capy::meta::legacy
 {
 
 template<typename Pack1, typename Pack2>
@@ -22,6 +22,7 @@ struct PackZip<
 };
 
 template<typename Pack1, typename Pack2>
+    requires (pack_size_v<Pack1> == pack_size_v<Pack2>)
 using pack_zip_t = typename PackZip<Pack1, Pack2>::type; 
 
 }

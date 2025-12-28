@@ -5,8 +5,9 @@
 #include "capydi/referencing/Reference.hpp"
 
 #include <capymeta/algorithms/pack/Append.hpp>
-#include <capymeta/algorithms/pack/PackMap.hpp>
+#include <capymeta/algorithms/pack/Map.hpp>
 #include <capymeta/primitives/Overload.hpp>
+#include <capymeta/primitives/Template.hpp>
 
 namespace capy::di
 {
@@ -41,7 +42,7 @@ namespace hidden__
         template<typename Key>
         struct TransformKey 
         {
-            using type = meta::append_t<meta::ValueUnit<TagValue>, Key>;
+            using type = meta::pack_append_t<Key, meta::ValueUnit<TagValue>>;
         };
 
         template<typename Key>
@@ -49,7 +50,10 @@ namespace hidden__
 
     public:
         using CentralType = central_type_t<Decoratee>;
-        using ResolutionKeysPack = meta::pack_map_t<KeysPack, TransformKey>;
+        using ResolutionKeysPack = meta::pack_map_t<
+            KeysPack, 
+            meta::template_ft<TransformKey, meta::MetaArity::N1>
+        >;
 
     public:
         static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;

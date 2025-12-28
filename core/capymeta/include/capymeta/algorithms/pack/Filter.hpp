@@ -1,49 +1,21 @@
-#ifndef FILTER_HPP_
-#define FILTER_HPP_
+#ifndef CAPYDI_FILTER_HPP_
+#define CAPYDI_FILTER_HPP_
 
-#include "capymeta/primitives/Pack.hpp"
-#include "Prepend.hpp"
-
-#include <type_traits>
+#include "legacy/Filter.hpp"
+#include "capymeta/concepts/Trait.hpp"
 
 namespace capy::meta
 {
 
 template<
-    typename Pack, 
-    template<typename> typename Predicate
+    typename Pack,
+    v_trait<MetaArity::N1> Predicate
 >
-struct Filter;
-
-template<
-    template<typename> typename Predicate, 
-    typename Head,
-    typename... Rest
->
-struct Filter<Pack<Head, Rest...>, Predicate>
-{
-    using type = std::conditional_t<
-        Predicate<Head>::value,
-        prepend_t<Head, typename Filter<Pack<Rest...>, Predicate>::type>,
-        typename Filter<Pack<Rest...>, Predicate>::type
-    >;
-};
-
-template<
-    template<typename> typename Predicate
->
-struct Filter<Pack<>, Predicate>
-{
-    using type = Pack<>;
-};
-
-
-template<
-    typename Pack, 
-    template<typename> typename Predicate
->
-using filter_t = typename Filter<Pack, Predicate>::type;
+using pack_filter_t = legacy::filter_t<
+    Pack,
+    as_unary_fv<Predicate>::template Functor
+>;
 
 }
 
-#endif // !FILTER_HPP_
+#endif //CAPYDI_FILTER_HPP_

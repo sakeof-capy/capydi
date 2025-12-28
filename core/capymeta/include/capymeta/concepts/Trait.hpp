@@ -1,8 +1,8 @@
 #ifndef FUNCTOR_CONCEPTS_HPP_
 #define FUNCTOR_CONCEPTS_HPP_
 
-#include "capymeta/primitives/Pack.hpp"
 #include "capymeta/primitives/MetaArity.hpp"
+#include "capymeta/primitives/FixTemplateMetaArity.hpp"
 
 #include <algorithm>
 
@@ -76,6 +76,23 @@ using call_t = typename implementation_details_::functor_call_t<MetaFunctor, Arg
 template<typename MetaFunctor, typename... Args>
     requires v_trait<MetaFunctor, meta_arity_from_args_v<Args...>>
 constexpr auto call_v = implementation_details_::functor_call_t<MetaFunctor, Args...>::value;
+
+template<typename MetaFunctor, MetaArity ARITY>
+    requires t_trait<MetaFunctor, ARITY>
+using as_nary_ft = fix_template_arity_ft<ARITY, MetaFunctor::template Functor>;
+
+template<typename MetaFunctor, MetaArity ARITY>
+    requires v_trait<MetaFunctor, ARITY>
+using as_nary_fv = fix_template_arity_fv<ARITY, MetaFunctor::template Functor>;
+
+template<typename MetaFunctor>
+    requires t_trait<MetaFunctor, MetaArity::N1>
+using as_unary_ft = as_nary_ft<MetaFunctor, MetaArity::N1>;
+
+template<typename MetaFunctor>
+    requires v_trait<MetaFunctor, MetaArity::N1>
+using as_unary_fv = as_nary_fv<MetaFunctor, MetaArity::N1>;
+
 
 }
 

@@ -5,7 +5,7 @@
 #include <capymeta/algorithms/general/Rebind.hpp>
 #include <capymeta/algorithms/pack/FilterMap.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
-#include <capymeta/algorithms/pack/PackZip.hpp>
+#include <capymeta/algorithms/pack/Zip.hpp>
 #include <utility>
 
 namespace capy::di
@@ -71,9 +71,12 @@ namespace hidden__
         >;
         using ConfigsToIndicesPack = meta::pack_zip_t<ConfigsPack, ConfigsIndicesPack>;
         
-        using type = meta::filter_map_t<
+        using type = meta::pack_filter_map_t<
             ConfigsToIndicesPack,
-            ConfigToIndexMapper<Predicate>::template Mapper
+            meta::template_ft<
+                ConfigToIndexMapper<Predicate>::template Mapper,
+                meta::MetaArity::N1
+            >
         >;
     };
     

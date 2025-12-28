@@ -19,6 +19,7 @@
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
+#include <capymeta/primitives/Template.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
 #include <concepts>
 #include <expected>
@@ -51,9 +52,12 @@ private:
     };
 
     template<typename RelatedKey>
-    using related_configs_pack_t = meta::filter_t<
+    using related_configs_pack_t = meta::pack_filter_t<
         ConfigsPack, 
-        RelatedConfigPredicate<RelatedKey>::template Predicate
+        meta::template_fv<
+            RelatedConfigPredicate<RelatedKey>::template Predicate,
+            meta::MetaArity::N1
+        >
     >;
 
 public:

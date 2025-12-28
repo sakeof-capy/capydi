@@ -4,8 +4,8 @@
 #include "capymeta/concepts/Trait.hpp"
 #include "capymeta/primitives/FixTemplateMetaArity.hpp"
 #include "capymeta/primitives/MetaArity.hpp"
+#include "capymeta/primitives/Pack.hpp"
 
-#include <cstddef>
 #include <array>
 #include <functional>
 

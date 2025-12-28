@@ -7,7 +7,6 @@
 #include "capydi/configs/ConfigType.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
-#include <capymeta/algorithms/pack/PackAlgorithm.hpp>
 #include <tuple>
 #include <type_traits>
 

@@ -2,9 +2,9 @@
 #define PACK_ALGORITHM_HPP_
 
 #include "capymeta/primitives/Pack.hpp"
-#include "PackMap.hpp"
-#include "Head.hpp"
-#include "PackConcat.hpp"
+#include "legacy/PackMap.hpp"
+#include "legacy/Head.hpp"
+#include "legacy/PackConcat.hpp"
 #include "capymeta/algorithms/general/Rebind.hpp"
 
 #include <tuple>
@@ -58,12 +58,12 @@ namespace implementation_details_
             >...
         >;
 
-        using SuccessSubtypesPack = pack_map_t<
+        using SuccessSubtypesPack = legacy::pack_map_t<
             ResultsPack,
             ValueTypeMapper
         >;
 
-        using ErrorSubtypesPack = pack_map_t<
+        using ErrorSubtypesPack = legacy::pack_map_t<
             ResultsPack,
             ErrorTypeMapper
         >;
@@ -74,7 +74,7 @@ namespace implementation_details_
         static_assert(all_error_types_same, "All error types must be equal");
 
         using SuccessType = rebind_pack_t<SuccessSubtypesPack, std::tuple>;
-        using ErrorType = head_t<ErrorSubtypesPack>; // None if empty
+        using ErrorType = legacy::head_t<ErrorSubtypesPack>; // None if empty
 
     public:
         using type = std::expected<SuccessType, ErrorType>;
@@ -128,12 +128,12 @@ namespace implementation_details_
             >...
         >;
 
-        using NextSuccessTypesPack = pack_map_t<
+        using NextSuccessTypesPack = legacy::pack_map_t<
             NextTypesPack,
             ValueTypeMapper
         >;
 
-        using SuccessSubtypesPack = pack_concat_t<
+        using SuccessSubtypesPack = legacy::pack_concat_t<
             AccumulatedResultPack, 
             NextSuccessTypesPack
         >;

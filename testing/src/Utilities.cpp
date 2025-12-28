@@ -3,7 +3,7 @@
 #include "capymeta/primitives/Template.hpp"
 #include "capymeta/primitives/Functor.hpp"
 #include "capymeta/algorithms/pack/Filter.hpp"
-#include "capymeta/algorithms/pack/PackMap.hpp"
+#include "capymeta/algorithms/pack/Map.hpp"
 #include "capymeta/algorithms/pack/Append.hpp"
 #include "capymeta/primitives/Overload.hpp"
 #include "capymeta/type_structures/Maybe.hpp"
@@ -56,11 +56,11 @@ TEST_CASE("utilities:meta_functors")
     SECTION("meta_predicate:filter")
     {
         using In = Pack<int, float, int, double, int>;
-        using Output = filter_t<
+        using Output = pack_filter_t<
             In, 
             functor_fv<[]<typename T>(Pack<T>&&) {
                 return !std::same_as<T, int>;
-            }, MetaArity::N1>::as_unary::template Functor
+            }, MetaArity::N1>
         >;
 
         STATIC_REQUIRE(std::same_as<Output, Pack<float, double>>);
@@ -81,7 +81,7 @@ TEST_CASE("utilities:meta_functors")
                     }
                 },
                 MetaArity::N1
-            >::as_unary::template Functor
+            >
         >;
 
         static_assert(std::same_as<
@@ -149,7 +149,7 @@ TEST_CASE("utilities:meta_optional")
                 return Pack<T, float>{};
             }, MetaArity::N1>>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
-                return append_t<double, T>{};
+                return pack_append_t<T, double>{};
             }, MetaArity::N1>>;
 
         using MaybeNoChain = 
@@ -158,7 +158,7 @@ TEST_CASE("utilities:meta_optional")
                 return Pack<T, float>{};
             }, MetaArity::N1>>
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
-                return append_t<double, T>{};
+                return legacy::append_t<T, double>{};
             }, MetaArity::N1>>;
 
         STATIC_REQUIRE(std::same_as<MaybeChain, Some<Pack<int, float, double>>>);

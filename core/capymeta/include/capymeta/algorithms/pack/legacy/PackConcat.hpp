@@ -3,7 +3,7 @@
 
 #include "capymeta/primitives/Pack.hpp"
 
-namespace capy::meta
+namespace capy::meta::legacy
 {
 
 template<typename Pack1, typename Pack2>

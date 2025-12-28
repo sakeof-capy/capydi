@@ -45,17 +45,15 @@
 #ifndef CONTAINER_TRY_HPP_
 #define CONTAINER_TRY_HPP_
 
-#include "configs/ConfigType.hpp"
 #include "configs/concepts/ChainableConfig.hpp"
 #include "configs/concepts/CreationalConfig.hpp"
-#include "configs/concepts/DiConfig.hpp"
 #include "dispatchers/CreationalConfigDispatcher.hpp"
 #include "dispatchers/ChainableConfigDispatcher.hpp"
 #include "configs/ConfigClassifier.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
-#include <capymeta/algorithms/general/Rebind.hpp>
+#include <capymeta/primitives/Functor.hpp>
 #include <tuple>
 #include <utility>
 
@@ -86,8 +84,14 @@ class DI
 {
 private:
     using ConfigsPack = meta::Pack<Configs...>;
-    using CreationalConfigsPack = meta::filter_t<ConfigsPack, IsCreationalConfig>;
-    using ChainableConfigsPack = meta::filter_t<ConfigsPack, IsChainableConfig>;
+    using CreationalConfigsPack = meta::pack_filter_t<
+        ConfigsPack,
+        meta::template_fv<IsCreationalConfig, meta::MetaArity::N1>
+    >;
+    using ChainableConfigsPack = meta::pack_filter_t<
+        ConfigsPack,
+        meta::template_fv<IsChainableConfig, meta::MetaArity::N1>
+    >;
     
     using CreationalDispatcherType = meta::rebind_pack_t<
         CreationalConfigsPack, 
