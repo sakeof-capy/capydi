@@ -3,7 +3,7 @@
 
 #include "capymeta/primitives/MetaArity.hpp"
 
-namespace capy::meta::hidden__
+namespace capy::meta::implementation_details_
 {
 
 template<
@@ -52,7 +52,7 @@ struct FixTemplateArityValued;
 namespace capy::meta
 {
 
-namespace hidden__
+namespace implementation_details_
 {
 
 DEUNIFY_TEMPLATE(MetaArity::N1,  PACK(template<class T>), PACK(T));
@@ -78,13 +78,13 @@ template<
     MetaArity ARITY, 
     template<typename...> typename Template
 >
-using fix_template_arity_ft = typename hidden__::FixTemplateArityTyped<ARITY, Template>;
+using fix_template_arity_ft = typename implementation_details_::FixTemplateArityTyped<ARITY, Template>;
 
 template<
     MetaArity ARITY, 
     template<typename...> typename Template
 >
-using fix_template_arity_fv = typename hidden__::FixTemplateArityValued<ARITY, Template>;
+using fix_template_arity_fv = typename implementation_details_::FixTemplateArityValued<ARITY, Template>;
 
 }
 

@@ -15,7 +15,7 @@ enum class MetaCallableTag
     VALUE_CALLABLE,
 };
 
-namespace hidden__
+namespace implementation_details_
 {
     template<
         template<typename...> typename Callable
@@ -43,12 +43,10 @@ namespace hidden__
 
 template<typename T>
 concept MetaCallable = requires {
-    typename hidden__::MetaCallable<T::template Functor>;
+    typename implementation_details_::MetaCallable<T::template Functor>;
     T::META_CALLABLE_TAGS;
 };
 
-// TODO: maybe simplify by having MetaArity... only here by hiding
-// the arities count requirement deeper into the hidden concept?
 template<
     typename T, 
     MetaArity HEAD_ARITY,
@@ -56,9 +54,9 @@ template<
 >
 concept t_trait
     =   MetaCallable<T>
-    &&  hidden__::tagged_with<T, MetaCallableTag::TYPE_CALLABLE>
-    &&  hidden__::of_arity<T, HEAD_ARITY>
-    &&  (hidden__::of_arity<T, TAIL_ARITIES> && ...);
+    &&  implementation_details_::tagged_with<T, MetaCallableTag::TYPE_CALLABLE>
+    &&  implementation_details_::of_arity<T, HEAD_ARITY>
+    &&  (implementation_details_::of_arity<T, TAIL_ARITIES> && ...);
 
 template<
     typename T, 
@@ -67,17 +65,17 @@ template<
 >
 concept v_trait 
     =   MetaCallable<T>
-    &&  hidden__::tagged_with<T, MetaCallableTag::VALUE_CALLABLE>
-    &&  hidden__::of_arity<T, HEAD_ARITY>
-    &&  (hidden__::of_arity<T, TAIL_ARITIES> && ...);
+    &&  implementation_details_::tagged_with<T, MetaCallableTag::VALUE_CALLABLE>
+    &&  implementation_details_::of_arity<T, HEAD_ARITY>
+    &&  (implementation_details_::of_arity<T, TAIL_ARITIES> && ...);
 
 template<typename MetaFunctor, typename... Args>
     requires t_trait<MetaFunctor, meta_arity_from_args_v<Args...>>
-using call_t = typename hidden__::functor_call_t<MetaFunctor, Args...>::type;
+using call_t = typename implementation_details_::functor_call_t<MetaFunctor, Args...>::type;
 
 template<typename MetaFunctor, typename... Args>
     requires v_trait<MetaFunctor, meta_arity_from_args_v<Args...>>
-constexpr auto call_v = hidden__::functor_call_t<MetaFunctor, Args...>::value;
+constexpr auto call_v = implementation_details_::functor_call_t<MetaFunctor, Args...>::value;
 
 }
 

@@ -1,8 +1,6 @@
 #ifndef OVERLOAD_HPP_
 #define OVERLOAD_HPP_
 
-#include "capymeta/primitives/Pack.hpp"
-
 namespace capy::meta
 {
 

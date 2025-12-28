@@ -6,7 +6,7 @@
 namespace capy::meta
 {
 
-namespace hidden__
+namespace implementation_details_
 {
     struct Nullopt{};
 }
@@ -14,10 +14,10 @@ namespace hidden__
 template<typename T>
 struct Maybe;
 
-using None = Maybe<hidden__::Nullopt>;
+using None = Maybe<implementation_details_::Nullopt>;
 
 template<typename T>
-    requires (!std::same_as<hidden__::Nullopt, T>)
+    requires (!std::same_as<implementation_details_::Nullopt, T>)
 using Some = Maybe<T>;
 
 template<typename T>
@@ -45,11 +45,11 @@ struct Maybe
 };
 
 template<>
-struct Maybe<hidden__::Nullopt>
+struct Maybe<implementation_details_::Nullopt>
 {
     static constexpr bool HAS_VALUE = false;
 
-    using Value = hidden__::Nullopt;
+    using Value = implementation_details_::Nullopt;
 
     template<t_trait<MetaArity::N1> Mapper>
     using Map = None;

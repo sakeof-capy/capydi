@@ -17,7 +17,7 @@ namespace capy::meta
 
 /// @cond HIDDEN
 
-namespace hidden__
+namespace implementation_details_
 {
     template<typename... Types>
     struct AllSame;
@@ -216,7 +216,7 @@ namespace hidden__
 //// @endcond
 
 template<typename Handler, typename... PackElements>
-constexpr inline hidden__::valued_pack_for_result_t<
+constexpr implementation_details_::valued_pack_for_result_t<
     Handler, PackElements...
 > valued_pack_for(
     Pack<PackElements...>&& pack, 
@@ -227,7 +227,7 @@ constexpr inline hidden__::valued_pack_for_result_t<
         std::forward<Handler>(handler)
     ));
 
-    return hidden__::valued_pack_for_utility__(
+    return implementation_details_::valued_pack_for_utility__(
         std::move(pack),
         std::forward<Handler>(handler),
         std::tuple{},
