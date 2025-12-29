@@ -41,7 +41,7 @@ struct Maybe
     using AndThen = call_t<Mapper, T>;
 
     template<typename OtherValue>
-    using Or = Maybe<T>;
+    using Or = T;
 };
 
 template<>
@@ -61,7 +61,7 @@ struct Maybe<implementation_details_::Nil>
     using AndThen = None;
 
     template<typename OtherValue>
-    using Or = Maybe<OtherValue>;
+    using Or = OtherValue;
 };
 
 }

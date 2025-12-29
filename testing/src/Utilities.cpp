@@ -43,6 +43,25 @@ TEST_CASE("utilities:meta_functors")
         STATIC_REQUIRE(call_v<f3, int, double>);
         STATIC_REQUIRE(!call_v<f3, double, double>);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         using f4 = functor_fv<[]<typename T>(Pack<T>) { 
             return std::same_as<T, int>; 
         }, MetaArity::N1>;
@@ -53,6 +72,10 @@ TEST_CASE("utilities:meta_functors")
         STATIC_REQUIRE(call_v<f4, int>);
         STATIC_REQUIRE(!call_v<f4, double>);
     }
+
+
+
+
 
     SECTION("meta_predicate:filter")
     {
@@ -149,6 +172,16 @@ TEST_CASE("utilities:meta_optional")
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return Pack<T, float>{};
             }, MetaArity::N1>>
+
+
+
+
+
+
+
+
+
+
             ::template Map<functor_ft<[]<class T>(Pack<T>) {
                 return pack_append_t<T, double>{};
             }, MetaArity::N1>>;
@@ -178,8 +211,8 @@ TEST_CASE("utilities:meta_optional")
         using MaybeWithInner = get_inner_t<WithInner>::Or<std::size_t>;
         using MaybeNoInner = get_inner_t<NoInner>::Or<std::size_t>;
 
-        STATIC_REQUIRE(std::same_as<MaybeWithInner, Some<int>>);
-        STATIC_REQUIRE(std::same_as<MaybeNoInner, Some<std::size_t>>);
+        STATIC_REQUIRE(std::same_as<MaybeWithInner, int>);
+        STATIC_REQUIRE(std::same_as<MaybeNoInner, std::size_t>);
     }
 
     SECTION("maybe:filter")
@@ -251,5 +284,28 @@ TEST_CASE("utilities:meta_optional")
 
 
 
+    }
+
+
+
+
+
+
+
+
+    SECTION("example")
+    {
+        using InputType = int;
+        using InputType2 = double;
+
+        using Functor = functor_fv<[]<class T>(Pack<T>) {
+            return std::is_same_v<T, int>;
+        }, MetaArity::N1>;
+
+        static constexpr bool result_int = call_v<Functor, InputType>;
+        static constexpr bool result_double = call_v<Functor, InputType2>;
+
+        static_assert(result_int);
+        static_assert(!result_double);
     }
 }

@@ -23,6 +23,8 @@
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <expected>
 
+#include "capydi/DependenciesInfo.hpp"
+
 namespace capy::di
 {
 
@@ -60,6 +62,8 @@ private:
     template<typename T>
     using dependencies_of_t = meta::args_pack_t<decltype(T::create)>;
 
+    using LocalDependenciesInfo = DependenciesInfo<Configs...>;
+
 public:
     constexpr explicit CreationalConfigDispatcher(
         Configs&&... configs
@@ -82,6 +86,18 @@ public:
     {
         // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
         using /* meta::Pack<?> */ Dependencies = dependencies_of_t<Type>;
+
+        using /* Maybe<Pack<?>> */ MaybeDependenciesKeys = LocalDependenciesInfo
+            ::template dependency_keys_pack_of_mt<KeyPack>;
+
+        if constexpr (!MaybeDependenciesKeys::HAS_VALUE)
+        {
+            return std::expected<RuntimeRef<Type>, Error> {
+                std::unexpected { Error::CANNOT_DEDUCE_DEPENDENCIES_OF_TYPE }
+            };
+        }
+
+        using DependenciesKeys = MaybeDependenciesKeys::Value;
 
         #define RESOLUTION_CALL \
             this->do_resolve(KeyPack{}, resolved_dependencies)

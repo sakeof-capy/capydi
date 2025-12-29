@@ -3,7 +3,7 @@
 
 #include "capymeta/primitives/Pack.hpp"
 #include "legacy/PackMap.hpp"
-#include "legacy/Head.hpp"
+#include "Head.hpp"
 #include "legacy/PackConcat.hpp"
 #include "capymeta/algorithms/general/Rebind.hpp"
 
@@ -74,7 +74,7 @@ namespace implementation_details_
         static_assert(all_error_types_same, "All error types must be equal");
 
         using SuccessType = rebind_pack_t<SuccessSubtypesPack, std::tuple>;
-        using ErrorType = legacy::head_t<ErrorSubtypesPack>; // None if empty
+        using ErrorType = pack_head_t<ErrorSubtypesPack>::template Or<None>;
 
     public:
         using type = std::expected<SuccessType, ErrorType>;

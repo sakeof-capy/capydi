@@ -46,7 +46,7 @@ namespace capy::di
  * @see ChainableConfig
  */
 template<typename Config>
-concept CreationalConfig = requires() {
+concept CreationalConfig = requires {
     typename Config::CentralType;
     typename Config::ResolutionKeysPack;
     Config::CONFIG_TYPE;
