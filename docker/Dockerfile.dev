@@ -3,6 +3,8 @@ FROM gcc:15.2
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY scripts /capydi/scripts
+COPY externis_fix.patch /capydi/
+
 WORKDIR /capydi
 
 RUN ./scripts/install_prerequisites.sh

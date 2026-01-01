@@ -36,6 +36,8 @@ clean:
 	@rm -rf $(BUILD_ROOT_DIR)
 	@echo "Cleaning: $(DOCS_OUTPUT_DIR)"
 	@rm -rf $(DOCS_OUTPUT_DIR)
+	@echo "Cleaning: $(ARTIFACTS_DIR)"
+	@rm -rf $(ARTIFACTS_DIR)
 
 .PHONY: deps
 deps:

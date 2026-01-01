@@ -28,7 +28,9 @@ test: configure
 
 .PHONY: bench
 bench: configure
-	$(call cmake_build,capydi_benchmark,-B) 2>&1 | tee benchmarks/capydi_benchmark.log
+	@mkdir -p artifacts
+	$(call cmake_build,capydi_benchmark,-B) 2>&1 | tee $(GCC_TIME_REPORT_FILE_PATH)
+	@cp $(BUILD_DIR)/benchmarks/trace.json $(EXTERNIS_TRACE_FILE_PATH)
 	@$(BUILD_DIR)/benchmarks/capydi_benchmark
 
 .PHONY: docs

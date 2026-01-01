@@ -1,0 +1,21 @@
+diff --git a/externis.h b/externis.h
+index b556766..8730a2f 100644
+--- a/externis.h
++++ b/externis.h
+@@ -17,6 +17,16 @@
+ 
+ #include <gcc-plugin.h>
+ 
++// ---- GCC plugin headers poison ctype macros ----
++#undef isspace
++#undef isalnum
++#undef isalpha
++#undef isdigit
++#undef isxdigit
++#undef toupper
++#undef tolower
++// ------------------------------------------------
++
+ #include <chrono>
+ #include <cpplib.h>
+ #include <cstdio>

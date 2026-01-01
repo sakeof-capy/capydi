@@ -16,4 +16,5 @@ apt-get install -y  \
     graphviz        \
     libboost-dev
 
+./scripts/prerequisites/install_externis.sh
 ./scripts/prerequisites/install_doxygen.sh
