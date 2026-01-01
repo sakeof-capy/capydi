@@ -17,7 +17,7 @@ run:
 
 .PHONY: test
 test:
-	@$(DOCKER_COMPOSE_DEV) run --rm test
+	$(DOCKER_COMPOSE_DEV) run --rm test
 
 .PHONY: docs
 docs:

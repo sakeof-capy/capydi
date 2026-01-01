@@ -10,20 +10,20 @@ services:
     tty: true
   all:
     <<: *dev-base
-    command: make NATIVE_MODE=1 all
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} all
 
   configure:
     <<: *dev-base
-    command: make NATIVE_MODE=1 configure
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} configure
 
   run:
     <<: *dev-base
-    command: make NATIVE_MODE=1 run
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} run
 
   test:
     <<: *dev-base
-    command: make NATIVE_MODE=1 test
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} test
 
   docs:
     <<: *dev-base
-    command: make NATIVE_MODE=1 docs
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} docs

@@ -13,7 +13,8 @@ all: configure
 
 .PHONY: configure
 configure:
-	@cmake -S $(ROOT_DIR) -B $(BUILD_DIR)
+	$(info "CMAKE_CONFIGURE_FLAGS: ${CMAKE_CONFIGURE_FLAGS}")
+	@cmake $(CMAKE_CONFIGURE_FLAGS) -S $(ROOT_DIR) -B $(BUILD_DIR)
 
 .PHONY: run
 run: configure

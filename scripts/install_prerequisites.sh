@@ -13,6 +13,7 @@ apt-get install -y  \
     make            \
     docker-compose  \
     cmake           \
-    graphviz
+    graphviz        \
+    libboost-dev
 
 ./scripts/prerequisites/install_doxygen.sh

@@ -3,10 +3,14 @@ set -e
 
 NATIVE_MODE=0
 USE_NATIVE_BUILD_DIR=0
+USE_BOOST=0
 EXTRA_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --use-boost)
+            USE_BOOST=1
+            ;;
         --docker)
             NATIVE_MODE=0
             USE_NATIVE_BUILD_DIR=0
@@ -40,6 +44,10 @@ fi
 
 if [[ $USE_NATIVE_BUILD_DIR -eq 1 ]]; then
     MAKE_ARGS+=("USE_NATIVE_BUILD_DIR=1")
+fi
+
+if [[ $USE_BOOST -eq 1 ]]; then
+    MAKE_ARGS+=("USE_BOOST=1")
 fi
 
 MAKE_ARGS+=("${EXTRA_ARGS[@]}")
