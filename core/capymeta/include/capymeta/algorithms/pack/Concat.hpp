@@ -14,4 +14,4 @@ using packs_multy_concat_t = legacy::packs_multy_concat_t<Packs...>;
 
 }
 
-#endif //CAPYDI_CONCAT_HPP_
+#endif // !CAPYDI_CONCAT_HPP_

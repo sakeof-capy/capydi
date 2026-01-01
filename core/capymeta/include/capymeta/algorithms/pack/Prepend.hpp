@@ -11,4 +11,4 @@ using pack_prepend_t = legacy::prepend_t<Pack, Element>;
 
 }
 
-#endif //CAPYDI_PREPEND_HPP_
+#endif // !CAPYDI_PREPEND_HPP_

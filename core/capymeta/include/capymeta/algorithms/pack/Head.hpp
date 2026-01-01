@@ -11,4 +11,4 @@ using pack_head_t = legacy::head_t<Pack>;
 
 }
 
-#endif //CAPYDI_HEAD_HPP_
+#endif // !CAPYDI_HEAD_HPP_
