@@ -19,6 +19,10 @@ run:
 test:
 	$(DOCKER_COMPOSE_DEV) run --rm test
 
+.PHONY: bench
+bench:
+	$(DOCKER_COMPOSE_DEV) run --rm bench
+
 .PHONY: docs
 docs:
 	@doxygen ${DOCS_DIR}/Doxyfile

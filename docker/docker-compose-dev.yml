@@ -24,6 +24,10 @@ services:
     <<: *dev-base
     command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} test
 
+  bench:
+    <<: *dev-base
+    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} bench
+    
   docs:
     <<: *dev-base
     command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} docs

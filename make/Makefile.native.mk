@@ -4,7 +4,7 @@ MAKEFILE_NATIVE_MK_ := 1
 include ./make/constants/Constants.mk
 
 define cmake_build
-	@cmake --build $(BUILD_DIR) --target $(1) -j $(JOBS)
+	@cmake --build $(BUILD_DIR) --target $(1) -j $(JOBS) -- $(2)
 endef
 
 .PHONY: all
@@ -25,6 +25,11 @@ run: configure
 test: configure
 	$(call cmake_build,testing)
 	@$(BUILD_DIR)/testing/testing
+
+.PHONY: bench
+bench: configure
+	$(call cmake_build,capydi_benchmark,-B) 2>&1 | tee benchmarks/capydi_benchmark.log
+	@$(BUILD_DIR)/benchmarks/capydi_benchmark
 
 .PHONY: docs
 docs:
