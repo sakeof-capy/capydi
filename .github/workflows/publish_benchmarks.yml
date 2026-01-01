@@ -2,8 +2,23 @@ name: Benchmark & Publish
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
+    paths:
+      - "**/*.h"
+      - "**/*.hpp"
+      - "**/*.c"
+      - "**/*.cpp"
+    workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   benchmark:
