@@ -44,4 +44,7 @@ deps:
 	@echo "Downloading git submodules..."
 	@git submodule update --init
 	@echo "Installing prerequisites..."
+
+ifeq ($(NATIVE_MODE),1)
 	@$(SCRIPTS_DIR)/install_prerequisites.sh
+endif
