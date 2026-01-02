@@ -10,24 +10,24 @@ services:
     tty: true
   all:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} all
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} all
 
   configure:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} configure
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} configure
 
   run:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} run
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} run
 
   test:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} test
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} test
 
   bench:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} bench
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} bench
     
   docs:
     <<: *dev-base
-    command: make NATIVE_MODE=1 USE_BOOST=${USE_BOOST} docs
+    command: make NATIVE_MODE=1 ${MAKE_COMMON_ARGS} docs

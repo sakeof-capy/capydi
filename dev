@@ -4,10 +4,15 @@ set -e
 NATIVE_MODE=0
 USE_NATIVE_BUILD_DIR=0
 USE_BOOST=0
+TARGET=""
 EXTRA_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --target)
+            shift
+            TARGET="$1"
+            ;;
         --use-boost)
             USE_BOOST=1
             ;;
@@ -50,6 +55,9 @@ if [[ $USE_BOOST -eq 1 ]]; then
     MAKE_ARGS+=("USE_BOOST=1")
 fi
 
+MAKE_ARGS+=("TARGET=${TARGET}")
 MAKE_ARGS+=("${EXTRA_ARGS[@]}")
+
+echo "MAKE_ARGS=${MAKE_ARGS[@]}"
 
 make "${MAKE_ARGS[@]}"

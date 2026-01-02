@@ -8,8 +8,12 @@ SCRIPTS_DIR := $(ROOT_DIR)/scripts
 BUILD_ROOT_DIR := $(ROOT_DIR)/build
 DOCS_DIR := $(ROOT_DIR)/docs
 DOCS_OUTPUT_DIR := $(DOCS_DIR)/output
-CMAKE_CONFIGURE_FLAGS := -Wall -Wextra
 ARTIFACTS_DIR := $(ROOT_DIR)/artifacts
+
+CMAKE_CONFIGURE_FLAGS := -Wall -Wextra
+MAKE_COMMON_ARGS := 		\
+	USE_BOOST=$(USE_BOOST) 	\
+	TARGET=$(TARGET)
 
 ifeq ($(USE_BOOST),1)
 GCC_TIME_REPORT_FILE_PATH := $(ARTIFACTS_DIR)/use_boost_time_report.log
