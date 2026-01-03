@@ -121,7 +121,7 @@ public:
         )}
     {}
 
-public:
+public: 
     template<Creatable Type, typename KeyPack = meta::Pack<Type>>
     [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
     {
