@@ -25,7 +25,7 @@ bench:
 
 .PHONY: docs
 docs:
-	@doxygen ${DOCS_DIR}/Doxyfile
+	$(DOCKER_COMPOSE_DEV) run --rm docs
 
 .PHONY: rebuild-image
 rebuild-image:
