@@ -33,8 +33,8 @@ jobs:
       - name: Run benchmarks
         run: |
           mkdir -p artifacts
-          ./dev --use-boost bench
-          ./dev bench
+          ./dev --use-boost bench --target filter
+          ./dev bench --target filter
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
