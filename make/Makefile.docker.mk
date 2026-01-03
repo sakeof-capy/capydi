@@ -17,7 +17,11 @@ run:
 
 .PHONY: test
 test:
-	@$(DOCKER_COMPOSE_DEV) run --rm test
+	$(DOCKER_COMPOSE_DEV) run --rm test
+
+.PHONY: bench
+bench:
+	$(DOCKER_COMPOSE_DEV) run --rm bench
 
 .PHONY: docs
 docs:

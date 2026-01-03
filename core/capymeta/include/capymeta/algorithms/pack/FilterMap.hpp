@@ -18,4 +18,4 @@ using pack_filter_map_t = legacy::filter_map_t<
 
 }
 
-#endif //CAPYDI_FILTERMAP_HPP_
+#endif // !CAPYDI_FILTERMAP_HPP_

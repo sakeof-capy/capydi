@@ -11,4 +11,4 @@ using pack_append_t = legacy::append_t<Pack, Element>;
 
 }
 
-#endif //CAPYDI_APPEND_HPP
+#endif // !CAPYDI_APPEND_HPP

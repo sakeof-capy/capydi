@@ -1,7 +1,7 @@
 include ./make/constants/Constants.mk
 include ./make/utilities/OpenDocs.mk
 
-ifdef NATIVE_MODE
+ifeq ($(NATIVE_MODE),1)
 include ./make/constants/NativeConstants.mk
 include ./make/Makefile.native.mk
 $(info Running in the native mode)
@@ -11,8 +11,9 @@ include ./make/Makefile.docker.mk
 $(info Running in the docker mode)
 endif
 
-ifdef USE_NATIVE_BUILD_DIR
-include ./make/constants/NativeBuildDir.mk
+
+ifeq ($(USE_NATIVE_BUILD_DIR),1)
+include ./make/constants/NativeBuildDir.mk	
 else
 include ./make/constants/DockerBuildDir.mk
 endif
@@ -35,10 +36,15 @@ clean:
 	@rm -rf $(BUILD_ROOT_DIR)
 	@echo "Cleaning: $(DOCS_OUTPUT_DIR)"
 	@rm -rf $(DOCS_OUTPUT_DIR)
+	@echo "Cleaning: $(ARTIFACTS_DIR)"
+	@rm -rf $(ARTIFACTS_DIR)
 
 .PHONY: deps
 deps:
 	@echo "Downloading git submodules..."
 	@git submodule update --init
 	@echo "Installing prerequisites..."
+
+ifeq ($(NATIVE_MODE),1)
 	@$(SCRIPTS_DIR)/install_prerequisites.sh
+endif

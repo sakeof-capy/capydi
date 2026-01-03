@@ -1,0 +1,55 @@
+name: Benchmark & Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.h"
+      - "**/*.hpp"
+      - "**/*.c"
+      - "**/*.cpp"
+    workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          ssh-key: ${{ secrets.CI_SSH_KEY }}
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run benchmarks
+        run: |
+          mkdir -p artifacts
+          ./dev --use-boost bench
+          ./dev bench
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks
+          path: artifacts/*
+
+      - name: Publish JSONs to Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./artifacts
