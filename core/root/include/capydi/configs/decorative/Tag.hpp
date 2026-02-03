@@ -2,8 +2,8 @@
 #define TAG_CONFIG_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capydi/referencing/Reference.hpp"
 
+#include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/algorithms/pack/Append.hpp>
 #include <capymeta/algorithms/pack/Map.hpp>
 #include <capymeta/primitives/Overload.hpp>
@@ -60,7 +60,7 @@ namespace implementation_details_
 
     public:
         template<typename... Args>
-        constexpr Reference<CentralType> auto 
+        constexpr meta::Reference<CentralType> auto 
             do_resolve(Args&&... args) const
         {
             return [&, this]<typename... Keys>(meta::Pack<Keys...>&&) {

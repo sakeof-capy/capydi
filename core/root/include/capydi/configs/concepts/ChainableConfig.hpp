@@ -11,9 +11,9 @@
 #ifndef CHAINABLE_CONFIG_HPP_
 #define CHAINABLE_CONFIG_HPP_
 
-#include "capydi/referencing/Reference.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/primitives/referencing/Reference.hpp>
 #include <concepts>
 
 namespace capy::di
@@ -63,11 +63,11 @@ concept ChainableConfig =
     }
     // && requires(
     //     const Config& config 
-    //     Reference<typename Config::RelatedEntity> auto related_entity
+    //     meta::Reference<typename Config::RelatedEntity> auto related_entity
     // ) {
     //     { 
     //         config.pipe(related_entity) 
-    //     } -> Reference<typename Config::RelatedEntity>;
+    //     } -> meta::Reference<typename Config::RelatedEntity>;
     // }
     && std::same_as<std::remove_cv_t<decltype(Config::CONFIG_TYPE)>, ConfigType>
     && Config::CONFIG_TYPE == ConfigType::CHAINABLE;

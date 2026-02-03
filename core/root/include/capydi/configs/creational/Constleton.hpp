@@ -1,8 +1,8 @@
 #ifndef CONSTLETON_HPP_
 #define CONSTLETON_HPP_
 
-#include "capydi/referencing/ConstexprRef.hpp"
-#include "capydi/referencing/Reference.hpp"
+#include <capymeta/primitives/referencing/ConstexprRef.hpp>
+#include <capymeta/primitives/referencing/Reference.hpp>
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
@@ -17,7 +17,7 @@ template<typename T>
 struct IsConstexprReference : std::false_type {};
 
 template<typename T, const T& Ref>
-struct IsConstexprReference<ConstexprRef<T, Ref>> : std::true_type {};
+struct IsConstexprReference<meta::ConstexprRef<T, Ref>> : std::true_type {};
 
 template<typename T>
 constexpr bool is_constexpr_reference_v = IsConstexprReference<std::remove_cvref_t<T>>::value;
@@ -50,14 +50,14 @@ public:
 
 public:
     template<ConstexprReference... Dependencies>
-    constexpr Reference<CentralType> auto
+    constexpr meta::Reference<CentralType> auto
         do_resolve(
             meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
         static constexpr CentralType instance = std::apply(Type::create, dependencies);
-        return ConstexprRef<CentralType, instance>{};
+        return meta::ConstexprRef<CentralType, instance>{};
     }
 };
 

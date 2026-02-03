@@ -1,10 +1,10 @@
 #ifndef SINGLETON_HPP_
 #define SINGLETON_HPP_
 
-#include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 
@@ -29,7 +29,7 @@ public:
 
 public:
     template<typename... Dependencies>
-    RuntimeRef<Type> do_resolve(
+    meta::RuntimeRef<Type> do_resolve(
         meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
@@ -39,7 +39,7 @@ public:
     }
 
     template<typename... Dependencies>
-    RuntimeRef<const Type> do_resolve(
+    meta::RuntimeRef<const Type> do_resolve(
         meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const

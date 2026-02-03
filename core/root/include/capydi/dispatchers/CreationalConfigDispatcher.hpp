@@ -1,58 +1,35 @@
-/**
- * @file CreationalConfigDispatcher.hpp
- * @brief Dispatcher responsible for creating and resolving creational dependencies.
- * 
- * The CreationalConfigDispatcher handles the first phase of dependency resolution:
- * instantiation and creation of objects. It routes resolution requests to the
- * appropriate CreationalConfig based on the requested type.
- * 
- * @see CreationalConfig
- * @see DI
- */
-
 #ifndef CREATIONAL_CONFIG_DISPATCHER_HPP_
 #define CREATIONAL_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
-#include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
+#include <capymeta/type_structures/MetaMap.hpp>
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/algorithms/pack/ValuedPackFor.hpp>
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <expected>
 
+/*
+capy::meta::MultyKVPair<
+    Singleton<spine_leaf_3::Leaf1>, 
+    Pack<
+        spine_leaf_3::Leaf1>, capy::meta::Pack<const capy::di::spine_leaf_3::Leaf1> >' to 'capy::meta::MultyKVPair<capy::di::Singleton<capy::di::spine_leaf_3::Leaf1>, capy::meta::Pack<capy::meta::Pack<capy::di::spine_leaf_3::Leaf1>, capy::meta::Pack<const capy::di::spine_leaf_3::Leaf1> > >&&'
+
+
+
+*/
+
 namespace capy::di
 {
-
-/// @cond IMPLEMENTATION
 
 template<typename T>
 concept Creatable = meta::create_static_method_exists_and_is_unique_v<T>;
 
-/// @endcond
-
-/**
- * @class CreationalConfigDispatcher
- * @brief Routes and executes creational resolution requests to appropriate configs.
- * 
- * @tparam Configs Variable number of CreationalConfig types.
- * 
- * This dispatcher maintains a collection of creational configurations and provides
- * a @c resolve<Type>() interface to create instances. It handles:
- * - Type-based routing to the correct config
- * - Dependency resolution recursion
- * - Error handling via @c std::expected
- * 
- * @internal This is an internal component of the DI framework. Users interact with
- *           it indirectly through the DI container.
- * 
- * @see CreationalConfig
- * @see DI
- */
 template<CreationalConfig... Configs>
-class CreationalConfigDispatcher : Configs...
+class CreationalConfigDispatcher : private Configs...
 {
 private:
     using Configs::do_resolve...;
@@ -64,54 +41,80 @@ public:
     constexpr explicit CreationalConfigDispatcher(
         Configs&&... configs
     )
-        : Configs { std::forward<Configs>(configs) }...
+        : configs_map_ (
+            meta::MultyKVPair {
+                resolution_keys_pack_t<Configs>{}, 
+                std::forward<Configs>(configs) 
+            }...
+        )
     {}
 
 public:
-    /**
-     * @brief Resolve (create) an instance of the specified type.
-     * 
-     * @tparam Type The type to create. Must satisfy Creatable.
-     * 
-     * @returns @c std::expected<RuntimeRef<Type>, Error> containing either:
-     *          - A reference to the created instance on success
-     *          - An error code if creation failed or dependencies couldn't be resolved
-     */
     template<Creatable Type, typename KeyPack = meta::Pack<Type>>
     constexpr Resolution<Type, Error> auto resolve() const
     {
-        // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
-        using /* meta::Pack<?> */ Dependencies = dependencies_of_t<Type>;
+        using /* meta::Pack<?> */ DependenciesPack = dependencies_of_t<Type>;
 
-        #define RESOLUTION_CALL \
-            this->do_resolve(KeyPack{}, resolved_dependencies)
+        auto maybe_config = this->configs_map_.static_find(meta::Unit<KeyPack>{});
 
-        return 
-            meta::valued_pack_for(
-                Dependencies{},
-                [this]<typename T>(meta::Unit<T&>) -> Resolution<T, Error> auto {
-                    return this->resolve<T>();
+        auto maybe_dependencies_tuple = [this]<typename... Dependencies>(
+            meta::Pack<Dependencies&...>
+        ) {
+            return std::apply(
+                [](auto&&... maybe_dependencies) {
+                    using DependenciesTuple = std::tuple<
+                        typename std::remove_reference_t<decltype(maybe_dependencies)>::value_type...
+                    >;
+
+                    if constexpr ((std::remove_reference_t<decltype(maybe_dependencies)>::has_value() && ...))
+                    {
+                        return meta::StaticOk<DependenciesTuple, Error> {
+                            std::tuple { std::move(maybe_dependencies.value())... }
+                        };
+                    }
+                    else 
+                    {
+                        return meta::StaticError<DependenciesTuple, Error> {
+                            Error::DEPENDENCY_CANNOT_BE_RESOLVED
+                        };
+                    }
+                },
+                std::tuple {
+                    this->resolve<Dependencies>()...
                 }
-            )
-            .transform_error([](const auto&) {
-                return Error::DEPENDENCY_CANNOT_BE_RESOLVED;
-            })
-            .and_then([this](auto&& resolved_dependencies) {
-                if constexpr (requires { RESOLUTION_CALL; }) 
-                {
-                    using ReturnValue = decltype(RESOLUTION_CALL);
-                    return std::expected<ReturnValue, Error> { RESOLUTION_CALL };
-                } 
-                else 
-                {
-                    return std::expected<RuntimeRef<Type>, Error> {
-                        std::unexpected { Error::CANNOT_BE_RESOLVED }
-                    };
-                }
-            });
+            );
+        }(DependenciesPack{});
 
-        #undef RESOLUTION_CALL
+        if constexpr (!decltype(maybe_dependencies_tuple)::has_value())
+        {
+            return meta::StaticError<meta::RuntimeRef<Type>, Error> {
+                maybe_dependencies_tuple.error()
+            };
+        }
+        else 
+        {
+            auto dependencies_tuple = maybe_dependencies_tuple.value();
+
+            if constexpr (decltype(maybe_config)::has_value())
+            {
+                auto config_reference = maybe_config.value();
+                typename decltype(config_reference)::ReferenceType config = config_reference;
+                auto resolution = config.do_resolve(KeyPack{}, dependencies_tuple   );
+                return meta::StaticOk<decltype(resolution), Error> { std::move(resolution) };
+            } 
+            else 
+            {
+                return meta::StaticError<meta::RuntimeRef<Type>, Error> {
+                    Error::CANNOT_BE_RESOLVED
+                };
+            }
+        }
     }
+
+private:
+    meta::MetaMap<
+        meta::MultyKVPair<resolution_keys_pack_t<Configs>, Configs>...
+    > configs_map_; 
 };
 
 }
