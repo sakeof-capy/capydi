@@ -28,7 +28,7 @@ public:
     using error_type = Error;
     
 public:
-    constexpr explicit StaticEither(Value&& value)
+    constexpr /* implicit */ StaticEither(Value&& value)
         : value_ { std::move(value) }
     {}
 
@@ -73,7 +73,7 @@ public:
     using error_type = Error;
 
 public:
-    constexpr explicit StaticEither(Error&& error)
+    constexpr /* implicit */ StaticEither(Error&& error)
         : error_ { std::move(error) }
     {}
 

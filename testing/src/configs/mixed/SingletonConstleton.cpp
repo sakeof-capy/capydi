@@ -80,7 +80,6 @@ TEST_CASE("mix:constleton_singleton") {
         );
     }
 
-
     SECTION("constleton_spine_missing_error")
     {
         static constexpr const DI container {

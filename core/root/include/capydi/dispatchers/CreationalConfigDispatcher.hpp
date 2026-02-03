@@ -99,8 +99,7 @@ public:
             {
                 auto config_reference = maybe_config.value();
                 typename decltype(config_reference)::ReferenceType config = config_reference;
-                auto resolution = config.do_resolve(KeyPack{}, dependencies_tuple   );
-                return meta::StaticOk<decltype(resolution), Error> { std::move(resolution) };
+                return config.do_resolve(KeyPack{}, dependencies_tuple);
             } 
             else 
             {

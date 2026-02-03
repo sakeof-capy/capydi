@@ -4,6 +4,7 @@
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/type_structures/StaticEither.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
@@ -29,22 +30,24 @@ public:
 
 public:
     template<typename... Dependencies>
-    meta::RuntimeRef<Type> do_resolve(
+    meta::StaticOk<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
         static Type instance = std::apply(Type::create, dependencies);
-        return instance;
+        return meta::RuntimeRef<Type> { instance };
     }
 
     template<typename... Dependencies>
-    meta::RuntimeRef<const Type> do_resolve(
+    meta::StaticOk<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
-        return this->do_resolve(meta::Pack<Type>{}, dependencies);
+        return meta::RuntimeRef<const Type> {
+            this->do_resolve(meta::Pack<Type>{}, dependencies).value()
+        };
     }
 };
 

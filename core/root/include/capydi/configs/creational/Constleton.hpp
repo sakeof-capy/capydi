@@ -2,10 +2,12 @@
 #define CONSTLETON_HPP_
 
 #include <capymeta/primitives/referencing/ConstexprRef.hpp>
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/type_structures/StaticEither.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 #include <type_traits>
@@ -50,14 +52,30 @@ public:
 
 public:
     template<ConstexprReference... Dependencies>
-    constexpr meta::Reference<CentralType> auto
+    constexpr meta::wrapped_with<meta::StaticEither> auto
         do_resolve(
             meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
         static constexpr CentralType instance = std::apply(Type::create, dependencies);
-        return meta::ConstexprRef<CentralType, instance>{};
+        return meta::StaticOk<meta::ConstexprRef<CentralType, instance>, Error> {
+            meta::ConstexprRef<CentralType, instance>{}
+        };
+    }
+
+    // TODO: think of simplifying this one
+    //       can we replace tuple with just auto?
+    template<typename... Dependencies>
+    constexpr meta::wrapped_with<meta::StaticEither> auto
+        do_resolve(
+            meta::Pack<CentralType>&& keys, 
+            const std::tuple<Dependencies...>& dependencies
+        ) const
+    {
+        return meta::StaticError<meta::RuntimeRef<CentralType>, Error> {
+            Error::CONSTLETON_ERROR
+        };
     }
 };
 
