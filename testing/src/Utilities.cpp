@@ -7,6 +7,8 @@
 #include "capymeta/algorithms/pack/Append.hpp"
 #include "capymeta/primitives/Overload.hpp"
 #include "capymeta/type_structures/Maybe.hpp"
+#include "capymeta/type_structures/MetaMap.hpp"
+#include "capymeta/type_structures/StaticMaybe.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <concepts>
@@ -248,8 +250,40 @@ TEST_CASE("utilities:meta_optional")
                 Pack<int, float, double>
             >);
         }
+    }
 
+    SECTION("static_maybe:basic")
+    {
+        auto static_maybe = StaticMaybe { 3 };
+        STATIC_REQUIRE(static_maybe.has_value());
+        STATIC_REQUIRE(static_maybe.value() == 3);
 
+        auto none = StaticNone<int>{};
+        STATIC_REQUIRE(!none.has_value());
 
+        auto unwrapper = [](auto& opt) {
+            if constexpr (opt.has_value())
+            {
+                return opt.value();
+            }
+            else 
+            {
+                return -1;
+            }
+        };
+
+        STATIC_REQUIRE(unwrapper(static_maybe) == 3);
+        STATIC_REQUIRE(unwrapper(none) == -1);
+    }
+
+    SECTION("map:basic")
+    {
+        static constexpr auto map = MetaMap {
+            MultyKVPair { Pack<ValueUnit<1>, ValueUnit<2>>{}, float { 2.3 } }
+        };
+
+        auto a = map.static_find(Unit<ValueUnit<1>>{});
+
+        static_assert(decltype(a)::has_value());
     }
 }
