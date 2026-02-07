@@ -12,16 +12,6 @@
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <expected>
 
-/*
-capy::meta::MultyKVPair<
-    Singleton<spine_leaf_3::Leaf1>, 
-    Pack<
-        spine_leaf_3::Leaf1>, capy::meta::Pack<const capy::di::spine_leaf_3::Leaf1> >' to 'capy::meta::MultyKVPair<capy::di::Singleton<capy::di::spine_leaf_3::Leaf1>, capy::meta::Pack<capy::meta::Pack<capy::di::spine_leaf_3::Leaf1>, capy::meta::Pack<const capy::di::spine_leaf_3::Leaf1> > >&&'
-
-
-
-*/
-
 namespace capy::di
 {
 
@@ -50,64 +40,63 @@ public:
     {}
 
 public:
+    
     template<Creatable Type, typename KeyPack = meta::Pack<Type>>
     constexpr Resolution<Type, Error> auto resolve() const
     {
-        using /* meta::Pack<?> */ DependenciesPack = dependencies_of_t<Type>;
-
         auto maybe_config = this->configs_map_.static_find(meta::Unit<KeyPack>{});
+        auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(dependencies_of_t<Type>{});
 
-        auto maybe_dependencies_tuple = [this]<typename... Dependencies>(
-            meta::Pack<Dependencies&...>
-        ) {
-            return std::apply(
-                [](auto&&... maybe_dependencies) {
-                    using DependenciesTuple = std::tuple<
-                        typename std::remove_reference_t<decltype(maybe_dependencies)>::value_type...
-                    >;
-
-                    if constexpr ((std::remove_reference_t<decltype(maybe_dependencies)>::has_value() && ...))
-                    {
-                        return meta::StaticOk<DependenciesTuple, Error> {
-                            std::tuple { std::move(maybe_dependencies.value())... }
-                        };
-                    }
-                    else 
-                    {
-                        return meta::StaticError<DependenciesTuple, Error> {
-                            Error::DEPENDENCY_CANNOT_BE_RESOLVED
-                        };
-                    }
-                },
-                std::tuple {
-                    this->resolve<Dependencies>()...
-                }
-            );
-        }(DependenciesPack{});
-
-        if constexpr (!decltype(maybe_dependencies_tuple)::has_value())
+        if constexpr (!decltype(maybe_config)::has_value())
         {
             return meta::StaticError<meta::RuntimeRef<Type>, Error> {
-                maybe_dependencies_tuple.error()
+                Error::CANNOT_BE_RESOLVED
+            };
+        }
+        else if constexpr(!decltype(maybe_dependencies_tuple)::has_value())
+        {
+            return meta::StaticError<meta::RuntimeRef<Type>, Error> {
+                std::move(maybe_dependencies_tuple).error()
             };
         }
         else 
         {
-            auto dependencies_tuple = maybe_dependencies_tuple.value();
-
-            if constexpr (decltype(maybe_config)::has_value())
-            {
-                auto config_reference = maybe_config.value();
-                typename decltype(config_reference)::ReferenceType config = config_reference;
-                return config.do_resolve(KeyPack{}, dependencies_tuple);
-            } 
-            else 
-            {
-                return meta::StaticError<meta::RuntimeRef<Type>, Error> {
-                    Error::CANNOT_BE_RESOLVED
-                };
-            }
+            auto dependencies_tuple = std::move(maybe_dependencies_tuple).value();
+            auto config_reference = maybe_config.value();
+            typename decltype(config_reference)::ReferenceType config = config_reference;
+            return config.do_resolve(KeyPack{}, dependencies_tuple);
         }
+    }
+
+private:
+
+    template<typename... Dependencies>
+    constexpr meta::wrapped_with<meta::StaticEither> auto
+        resolve_dependencies_tuple(meta::Pack<Dependencies&...>&&) const
+    {
+        return std::apply(
+            [](auto&&... maybe_dependencies) {
+                using DependenciesTuple = std::tuple<
+                    typename std::remove_reference_t<decltype(maybe_dependencies)>::value_type...
+                >;
+
+                if constexpr ((std::remove_reference_t<decltype(maybe_dependencies)>::has_value() && ...))
+                {
+                    return meta::StaticOk<DependenciesTuple, Error> {
+                        std::tuple { std::move(maybe_dependencies.value())... }
+                    };
+                }
+                else 
+                {
+                    return meta::StaticError<DependenciesTuple, Error> {
+                        Error::DEPENDENCY_CANNOT_BE_RESOLVED
+                    };
+                }
+            },
+            std::tuple {
+                this->resolve<Dependencies>()...
+            }
+        );
     }
 
 private:
