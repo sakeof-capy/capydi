@@ -18,16 +18,16 @@
 #define RESOLUTION_HPP_
 
 #include <capymeta/concepts/WrappedWIth.hpp>
-#include <capymeta/type_structures/StaticEither.hpp>
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <type_traits>
+#include <expected>
 
 namespace capy::di
 {
 
 template<typename T, typename Dependency, typename Error_>
 concept Resolution 
-    =   meta::wrapped_with<T, meta::StaticEither> 
+    =   meta::wrapped_with<T, std::expected> 
     &&  meta::Reference<typename T::value_type, Dependency> 
     &&  std::same_as<typename T::error_type, Error_>;
 

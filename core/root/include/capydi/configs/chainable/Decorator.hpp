@@ -3,9 +3,11 @@
 
 #include "capydi/configs/concepts/ChainableConfig.hpp"
 #include "capydi/configs/creational/Singleton.hpp"
+#include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <type_traits>
+#include <expected>
 
 namespace capy::di
 {
@@ -26,17 +28,18 @@ public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;
 
 public:
-    meta::Reference<RelatedEntity> auto
+    Resolution<RelatedEntity, Error> auto
         pipe(
             meta::Reference<RelatedEntity> auto decoratee
         ) const
     {
         auto dependencies = std::tuple { decoratee };
-        Decorator_& decorator_ref = inner_config_.do_resolve(
-            meta::Pack<Decorator_>{}, 
-            dependencies
-        );
-        return meta::RuntimeRef (static_cast<RelatedEntity&>(decorator_ref));
+
+        return inner_config_
+            .do_resolve(meta::Pack<Decorator_>{}, dependencies)
+            .transform([](auto decorator_ref) {
+                return meta::RuntimeRef (static_cast<RelatedEntity&>(decorator_ref));
+            });
     }
 
 private:

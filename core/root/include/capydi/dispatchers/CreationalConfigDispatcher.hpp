@@ -49,29 +49,26 @@ public:
 
         if constexpr (!decltype(maybe_config)::has_value())
         {
-            return meta::StaticError<meta::RuntimeRef<Type>, Error> {
-                Error::CANNOT_BE_RESOLVED
-            };
-        }
-        else if constexpr(!decltype(maybe_dependencies_tuple)::has_value())
-        {
-            return meta::StaticError<meta::RuntimeRef<Type>, Error> {
-                std::move(maybe_dependencies_tuple).error()
+            return std::expected<meta::RuntimeRef<Type>, Error> {
+                std::unexpected { Error::CANNOT_BE_RESOLVED }
             };
         }
         else 
         {
-            auto dependencies_tuple = std::move(maybe_dependencies_tuple).value();
             auto config_reference = maybe_config.value();
             typename decltype(config_reference)::ReferenceType config = config_reference;
-            return config.do_resolve(KeyPack{}, dependencies_tuple);
+
+            return maybe_dependencies_tuple
+                .and_then([&config](auto&& dependencies_tuple) {
+                    return config.do_resolve(KeyPack{}, dependencies_tuple);
+                });
         }
     }
 
 private:
 
     template<typename... Dependencies>
-    constexpr meta::wrapped_with<meta::StaticEither> auto
+    constexpr meta::wrapped_with<std::expected> auto
         resolve_dependencies_tuple(meta::Pack<Dependencies&...>&&) const
     {
         return std::apply(
@@ -80,16 +77,16 @@ private:
                     typename std::remove_reference_t<decltype(maybe_dependencies)>::value_type...
                 >;
 
-                if constexpr ((std::remove_reference_t<decltype(maybe_dependencies)>::has_value() && ...))
+                if ((maybe_dependencies.has_value() && ...))
                 {
-                    return meta::StaticOk<DependenciesTuple, Error> {
+                    return std::expected<DependenciesTuple, Error> {
                         std::tuple { std::move(maybe_dependencies.value())... }
                     };
                 }
                 else 
                 {
-                    return meta::StaticError<DependenciesTuple, Error> {
-                        Error::DEPENDENCY_CANNOT_BE_RESOLVED
+                    return std::expected<DependenciesTuple, Error> {
+                        std::unexpected { Error::DEPENDENCY_CANNOT_BE_RESOLVED }
                     };
                 }
             },

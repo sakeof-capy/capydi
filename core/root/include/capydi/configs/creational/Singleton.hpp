@@ -8,6 +8,7 @@
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
+#include <expected>
 
 namespace capy::di
 {
@@ -30,7 +31,7 @@ public:
 
 public:
     template<typename... Dependencies>
-    meta::StaticOk<meta::RuntimeRef<Type>, Error> do_resolve(
+    std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
@@ -40,7 +41,7 @@ public:
     }
 
     template<typename... Dependencies>
-    meta::StaticOk<meta::RuntimeRef<const Type>, Error> do_resolve(
+    std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const

@@ -131,10 +131,10 @@ public:
 
         return this->creational_dispatcher_
             .template resolve<Type, KeyPack>()
-            // .and_then([this](meta::Reference<Type> auto entity) {
-            //     return this->chainable_dispatcher_
-            //         .template apply_configs_chain<KeyPack, Type>(entity);
-            // })
+            .and_then([this](meta::Reference<Type> auto entity) {
+                return this->chainable_dispatcher_
+                    .template apply_configs_chain<KeyPack, Type>(entity);
+            })
             ;
     }
 

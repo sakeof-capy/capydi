@@ -11,6 +11,7 @@
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 #include <type_traits>
+#include <expected>
 
 namespace capy::di
 {
@@ -52,14 +53,14 @@ public:
 
 public:
     template<ConstexprReference... Dependencies>
-    constexpr meta::wrapped_with<meta::StaticEither> auto
+    constexpr meta::wrapped_with<std::expected> auto
         do_resolve(
             meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
         static constexpr CentralType instance = std::apply(Type::create, dependencies);
-        return meta::StaticOk<meta::ConstexprRef<CentralType, instance>, Error> {
+        return std::expected<meta::ConstexprRef<CentralType, instance>, Error> {
             meta::ConstexprRef<CentralType, instance>{}
         };
     }
@@ -67,14 +68,14 @@ public:
     // TODO: think of simplifying this one
     //       can we replace tuple with just auto?
     template<typename... Dependencies>
-    constexpr meta::wrapped_with<meta::StaticEither> auto
+    constexpr meta::wrapped_with<std::expected> auto
         do_resolve(
             meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
-        return meta::StaticError<meta::RuntimeRef<CentralType>, Error> {
-            Error::CONSTLETON_ERROR
+        return std::expected<meta::RuntimeRef<CentralType>, Error> {
+            std::unexpected { Error::CONSTLETON_ERROR }
         };
     }
 };
