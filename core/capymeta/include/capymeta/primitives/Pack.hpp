@@ -69,6 +69,9 @@ constexpr std::size_t pack_size_v = []<typename... Types>(Pack<Types...>&&) {
     return sizeof...(Types);
 }(Pack_{});
 
+template<typename Pack_>
+constexpr bool pack_is_empty_v = pack_size_v<Pack_> == 0;
+
 /**
  * @class ValueUnit
  * @brief A wrapper for non-type template parameter values.

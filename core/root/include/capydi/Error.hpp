@@ -30,6 +30,9 @@ enum class Error
     /// @brief A dependency required by another dependency cannot be resolved.
     ///        This indicates a missing transitive dependency in the configuration graph.
     DEPENDENCY_CANNOT_BE_RESOLVED,
+
+
+    CONSTLETON_ERROR,
 };
 
 }

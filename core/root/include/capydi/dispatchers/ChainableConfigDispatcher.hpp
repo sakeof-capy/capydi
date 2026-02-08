@@ -1,24 +1,12 @@
-/**
- * @file ChainableConfigDispatcher.hpp
- * @brief Dispatcher that applies chainable (decorator) configurations to created objects.
- * 
- * The ChainableConfigDispatcher handles the second phase of dependency resolution:
- * applying a pipeline of transformations/decorators to created objects. It routes
- * piping requests to applicable ChainableConfigs based on their RelatedKey.
- * 
- * @see ChainableConfig
- * @see DI
- */
-
 #ifndef CHAINABLE_CONFIG_DISPATCHER_HPP_
 #define CHAINABLE_CONFIG_DISPATCHER_HPP_
 
 #include "capydi/configs/concepts/ChainableConfig.hpp"
-#include "capydi/referencing/Reference.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
+#include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Template.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
 #include <concepts>
@@ -26,8 +14,6 @@
 
 namespace capy::di
 {
-
-/// @cond IMPLEMENTATION
 
 template<ChainableConfig... Configs>
 class ChainableConfigDispatcher : private Configs...
@@ -65,35 +51,22 @@ public:
         : Configs(std::move(configs))...
     {}
 
-    /// @brief Apply the decorator pipeline for a specific key to an entity
     template<typename RelatedKey, typename RelatedEntity>
     [[nodiscard]] constexpr Resolution<
         RelatedEntity, 
         Error
     > auto
         apply_configs_chain(
-            Reference<RelatedEntity> auto entity
+            meta::Reference<RelatedEntity> auto entity
         ) const 
     {
         using RelatedConfigsPack = related_configs_pack_t<RelatedKey>;
         
-        #define RESOLUTION_ATTEMPT      \
-            this->perform_piping(       \
-                meta::Pack<RelatedEntity>{},   \
-                RelatedConfigsPack{},   \
-                entity                  \
-            )
-
-        //if constexpr (requires { RESOLUTION_ATTEMPT; })
-        //{
-            auto resolution = RESOLUTION_ATTEMPT;
-            return std::expected<decltype(resolution), Error> { resolution };
-        //}
-
-        #undef RESOLUTION_ATTEMPT
-        
-        return std::expected<decltype(entity), Error> { entity };
-
+        return this->perform_piping(       
+            meta::Pack<RelatedEntity>{},   
+            RelatedConfigsPack{},   
+            entity                  
+        );
     }
     
 private:
@@ -102,37 +75,40 @@ private:
         typename HeadConfig, 
         typename... TailConfigs
     >
-    [[nodiscard]] constexpr Reference<RelatedEntity> auto
+    [[nodiscard]] constexpr Resolution<RelatedEntity, Error> auto 
         perform_piping(
             meta::Pack<RelatedEntity>&&,
             meta::Pack<HeadConfig, TailConfigs...>&&, 
-            Reference<RelatedEntity> auto entity
+            meta::Reference<RelatedEntity> auto entity
         ) const 
     {
         const HeadConfig& 
             config = static_cast<const HeadConfig&>(*this);
-        
-        Reference<RelatedEntity> auto 
-            processed_entity = config.pipe(entity);
 
-        return this->perform_piping(
-            meta::Pack<RelatedEntity>{},
-            meta::Pack<TailConfigs...>{}, 
-            processed_entity
-        );
+        return config
+            .pipe(entity)
+            .and_then([this](meta::Reference<RelatedEntity> auto processed_entity) {
+                return this->perform_piping(
+                    meta::Pack<RelatedEntity>{},
+                    meta::Pack<TailConfigs...>{}, 
+                    processed_entity
+                );
+            });
     }
 
     template<
         typename RelatedEntity
     >
-    [[nodiscard]] constexpr Reference<RelatedEntity> auto
+    [[nodiscard]] constexpr Resolution<RelatedEntity, Error> auto
         perform_piping(
             meta::Pack<RelatedEntity>&&,
             meta::Pack<>&&, 
-            Reference<RelatedEntity> auto entity
+            meta::Reference<RelatedEntity> auto entity
         ) const 
     {
-        return entity;
+        return std::expected<meta::RuntimeRef<RelatedEntity>, Error> { 
+            entity 
+        };
     }
 };
 

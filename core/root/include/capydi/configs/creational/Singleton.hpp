@@ -1,12 +1,14 @@
 #ifndef SINGLETON_HPP_
 #define SINGLETON_HPP_
 
-#include "capydi/referencing/RuntimeRef.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/type_structures/StaticEither.hpp>
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
+#include <expected>
 
 namespace capy::di
 {
@@ -29,22 +31,24 @@ public:
 
 public:
     template<typename... Dependencies>
-    RuntimeRef<Type> do_resolve(
+    std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
         static Type instance = std::apply(Type::create, dependencies);
-        return instance;
+        return meta::RuntimeRef<Type> { instance };
     }
 
     template<typename... Dependencies>
-    RuntimeRef<const Type> do_resolve(
+    std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies
     ) const
     {
-        return this->do_resolve(meta::Pack<Type>{}, dependencies);
+        return meta::RuntimeRef<const Type> {
+            this->do_resolve(meta::Pack<Type>{}, dependencies).value()
+        };
     }
 };
 

@@ -1,14 +1,17 @@
 #ifndef CONSTLETON_HPP_
 #define CONSTLETON_HPP_
 
-#include "capydi/referencing/ConstexprRef.hpp"
-#include "capydi/referencing/Reference.hpp"
+#include <capymeta/primitives/referencing/ConstexprRef.hpp>
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
+#include <capymeta/primitives/referencing/Reference.hpp>
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
 
+#include <capymeta/type_structures/StaticEither.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 #include <type_traits>
+#include <expected>
 
 namespace capy::di
 {
@@ -17,7 +20,7 @@ template<typename T>
 struct IsConstexprReference : std::false_type {};
 
 template<typename T, const T& Ref>
-struct IsConstexprReference<ConstexprRef<T, Ref>> : std::true_type {};
+struct IsConstexprReference<meta::ConstexprRef<T, Ref>> : std::true_type {};
 
 template<typename T>
 constexpr bool is_constexpr_reference_v = IsConstexprReference<std::remove_cvref_t<T>>::value;
@@ -50,14 +53,30 @@ public:
 
 public:
     template<ConstexprReference... Dependencies>
-    constexpr Reference<CentralType> auto
+    constexpr meta::wrapped_with<std::expected> auto
         do_resolve(
             meta::Pack<CentralType>&& keys, 
             const std::tuple<Dependencies...>& dependencies
         ) const
     {
         static constexpr CentralType instance = std::apply(Type::create, dependencies);
-        return ConstexprRef<CentralType, instance>{};
+        return std::expected<meta::ConstexprRef<CentralType, instance>, Error> {
+            meta::ConstexprRef<CentralType, instance>{}
+        };
+    }
+
+    // TODO: think of simplifying this one
+    //       can we replace tuple with just auto?
+    template<typename... Dependencies>
+    constexpr meta::wrapped_with<std::expected> auto
+        do_resolve(
+            meta::Pack<CentralType>&& keys, 
+            const std::tuple<Dependencies...>& dependencies
+        ) const
+    {
+        return std::expected<meta::RuntimeRef<CentralType>, Error> {
+            std::unexpected { Error::CONSTLETON_ERROR }
+        };
     }
 };
 
