@@ -3,8 +3,10 @@
 
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
+#include "capydi/configs/inputs/NoInput.hpp"
 
 #include <capymeta/type_structures/StaticEither.hpp>
+#include <capymeta/type_structures/Maybe.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
@@ -33,7 +35,8 @@ public:
     template<typename... Dependencies>
     std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys, 
-        std::tuple<Dependencies...>& dependencies
+        std::tuple<Dependencies...>& dependencies,
+        const auto& input
     ) const
     {
         static Type instance = std::apply(Type::create, dependencies);
@@ -43,12 +46,19 @@ public:
     template<typename... Dependencies>
     std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys, 
-        std::tuple<Dependencies...>& dependencies
+        std::tuple<Dependencies...>& dependencies,
+        const auto& input
     ) const
     {
         return meta::RuntimeRef<const Type> {
-            this->do_resolve(meta::Pack<Type>{}, dependencies).value()
+            this->do_resolve(meta::Pack<Type>{}, dependencies, input).value()
         };
+    }
+
+    template<std::size_t DependencyIndex>
+    std::optional<NoInputStub> get_dependencies_input() const
+    {
+        return std::nullopt;    
     }
 };
 

@@ -6,6 +6,7 @@
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
+#include <capymeta/type_structures/Maybe.hpp>
 #include <type_traits>
 #include <expected>
 
@@ -36,7 +37,7 @@ public:
         auto dependencies = std::tuple { decoratee };
 
         return inner_config_
-            .do_resolve(meta::Pack<Decorator_>{}, dependencies)
+            .do_resolve(meta::Pack<Decorator_>{}, dependencies, meta::None{})
             .transform([](auto decorator_ref) {
                 return meta::RuntimeRef (static_cast<RelatedEntity&>(decorator_ref));
             });

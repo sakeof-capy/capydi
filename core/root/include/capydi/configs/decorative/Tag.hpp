@@ -2,86 +2,78 @@
 #define TAG_CONFIG_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
+#include "capydi/configs/inputs/TagInput.hpp"
+#include "capydi/configs/inputs/NoInput.hpp"
 
-#include <capymeta/primitives/referencing/Reference.hpp>
-#include <capymeta/algorithms/pack/Append.hpp>
-#include <capymeta/algorithms/pack/Map.hpp>
-#include <capymeta/primitives/Overload.hpp>
-#include <capymeta/primitives/Template.hpp>
+#include <capymeta/primitives/Pack.hpp>
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 
 namespace capy::di
 {
 
-using TagType = std::size_t;
-
-/// @cond HIDDEN
-
-namespace implementation_details_
+template<CreationalConfig Decoratee>
+class Tag
 {
-    template<TagType TagValue, CreationalConfig Decoratee>
-    class TagDecorator;
-}
+public:
+    constexpr explicit Tag(std::size_t tag, Decoratee&& decoratee)
+        : tag_ { tag }
+        , decoratee_ { std::move(decoratee) }
+    {}
 
-//// @endcond
+public:
+    using CentralType = central_type_t<Decoratee>;
+    using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = resolution_keys_pack_t<Decoratee>;
 
-template<TagType TagValue>
-struct Tag
-{
-    template<CreationalConfig Decoratee>
-    using Decorator = implementation_details_::TagDecorator<TagValue, Decoratee>;
-};
+public:
+    static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
 
-namespace implementation_details_
-{
-    template<TagType TagValue, CreationalConfig Decoratee>
-    class TagDecorator
+public:
+    template<typename Key>
+    std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
+        meta::Pack<Key>&& keys, 
+        auto& dependencies,
+        const std::optional<TagInput>& input
+    ) const
     {
-    public:
-        using KeysPack = resolution_keys_pack_t<Decoratee>;
-
-        template<typename Key>
-        struct TransformKey 
+        if (!input.has_value()) [[unlikely]]
         {
-            using type = meta::pack_append_t<Key, meta::ValueUnit<TagValue>>;
-        };
-
-        template<typename Key>
-        using transform_key_t = typename TransformKey<Key>::type;
-
-    public:
-        using CentralType = central_type_t<Decoratee>;
-        using ResolutionKeysPack = meta::pack_map_t<
-            KeysPack, 
-            meta::template_ft<TransformKey, meta::MetaArity::N1>
-        >;
-
-    public:
-        static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
-
-    public:
-        template<typename... Args>
-        constexpr meta::Reference<CentralType> auto 
-            do_resolve(Args&&... args) const
-        {
-            return [&, this]<typename... Keys>(meta::Pack<Keys...>&&) {
-                return meta::Overload {
-                    [this]<typename... Dependencies>(
-                        transform_key_t<Keys>&&,
-                        std::tuple<Dependencies...>& dependencies
-                    ) {
-                        return this->decoratee_.do_resolve(
-                            Keys{}, 
-                            dependencies
-                        );
-                    }...
-                }(std::forward<Args>(args)...);
-            }(KeysPack{});
+            return std::unexpected { Error::TAG_CONFIG_EXPECTED }; 
         }
 
-    private:
-        Decoratee decoratee_;
-    };
-}
+        const std::size_t input_tag = input.value().tag.value();
+
+        if (this->tag_ != input_tag) [[unlikely]]
+        {
+            return std::unexpected { Error::TAG_MISMATCH };
+        }
+
+        return decoratee_.do_resolve(
+            keys, 
+            dependencies, 
+            std::optional<NoInputStub>{}
+        );
+    }
+
+    template<typename Key>
+    std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
+        meta::Pack<Key>&& keys, 
+        auto& dependencies,
+        const auto& input
+    ) const
+    {
+        return std::unexpected { Error::UNRECOGNIZED_CONFIG_INPUT };
+    }
+
+    template<std::size_t DependencyIndex>
+    meta::None get_dependencies_input() const
+    {
+        return meta::None{};    
+    }
+
+private:
+    std::size_t tag_;
+    Decoratee decoratee_;
+};
 
 }
 

@@ -33,6 +33,12 @@ enum class Error
 
 
     CONSTLETON_ERROR,
+
+    UNRECOGNIZED_CONFIG_INPUT,
+
+    TAG_CONFIG_EXPECTED,
+
+    TAG_MISMATCH,
 };
 
 }
