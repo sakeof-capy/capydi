@@ -6,6 +6,7 @@
 #include "capydi/configs/inputs/NoInput.hpp"
 
 #include <capymeta/type_structures/StaticEither.hpp>
+#include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/Pack.hpp>
@@ -27,6 +28,8 @@ public:
         meta::Pack<Type>, 
         meta::Pack<const Type>
     >;
+
+    using DependenciesPack = meta::args_pack_t<decltype(CentralType::create)>;
 
 public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;

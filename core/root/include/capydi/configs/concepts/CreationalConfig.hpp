@@ -77,6 +77,9 @@ using central_type_t = typename Config::CentralType;
 template<CreationalConfig Config>
 using resolution_keys_pack_t = typename Config::ResolutionKeysPack;
 
+template<CreationalConfig Config>
+using dependencies_pack_t = typename Config::DependenciesPack;
+
 }  
 
 #endif // !CREATIONAL_CONFIG_HPP_

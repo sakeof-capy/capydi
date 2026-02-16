@@ -23,6 +23,7 @@ public:
 public:
     using CentralType = central_type_t<Decoratee>;
     using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = resolution_keys_pack_t<Decoratee>;
+    using DependenciesPack = dependencies_pack_t<Decoratee>;
 
 public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
@@ -65,9 +66,9 @@ public:
     }
 
     template<std::size_t DependencyIndex>
-    meta::None get_dependencies_input() const
+    std::optional<NoInputStub> get_dependencies_input() const
     {
-        return meta::None{};    
+        return std::nullopt;    
     }
 
 private:

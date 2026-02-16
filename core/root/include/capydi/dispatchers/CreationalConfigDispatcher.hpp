@@ -24,10 +24,6 @@ concept Creatable = meta::create_static_method_exists_and_is_unique_v<T>;
 template<CreationalConfig... Configs>
 class CreationalConfigDispatcher
 {
-private:
-    template<typename T>
-    using dependencies_of_t = meta::args_pack_t<decltype(T::create)>;
-
 public:
     constexpr explicit CreationalConfigDispatcher(
         Configs&&... configs
@@ -42,7 +38,7 @@ public:
 
 public:
     
-    template<Creatable Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
+    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
     constexpr Resolution<Type, Error> auto resolve(const InputType& input = NoInputStub{}) const
     {
         auto maybe_config = this->configs_map_.static_find(meta::Unit<KeyPack>{});
@@ -57,10 +53,11 @@ public:
         {
             auto config_reference = maybe_config.value();
             typename decltype(config_reference)::ReferenceType config = config_reference;
+            using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
             auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
                 config,
-                dependencies_of_t<Type>{}
+                DependenciesPack{}
             );
 
             return maybe_dependencies_tuple

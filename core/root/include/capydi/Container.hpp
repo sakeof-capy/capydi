@@ -124,7 +124,7 @@ public:
     {}
 
 public: 
-    template<Creatable Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
+    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
     [[nodiscard]] constexpr Resolution<Type, Error> auto 
         resolve(const InputType& input = NoInputStub{}) const
     {

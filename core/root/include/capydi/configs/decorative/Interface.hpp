@@ -1,45 +1,79 @@
 #ifndef INTERFACE_HPP_
 #define INTERFACE_HPP_
 
+#include "capydi/configs/concepts/CreationalConfig.hpp"
+
+#include <capymeta/primitives/Pack.hpp>
+
 namespace capy::di
 {
 
-/// @cond HIDDEN
-
-namespace implementation_details_
+template<CreationalConfig Decoratee, typename Interface>
+    requires std::derived_from<central_type_t<Decoratee>, Interface>
+class AsInterface
 {
-    template<typename Interface, typename Decoratee>
-    class InterfaceDecorator;
-}
+public:
+    constexpr explicit AsInterface(meta::Unit<Interface>, Decoratee&& decoratee)
+        : decoratee_ { std::move(decoratee) }
+    {}
 
-//// @endcond
+public:
+    using CentralType = Interface;
+    using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = meta::Pack<
+        meta::Pack<Interface>, 
+        meta::Pack<const Interface>
+    >;
+    using DependenciesPack = dependencies_pack_t<Decoratee>;
 
-template<typename InterfaceType>
-struct Interface
-{
-    template<typename Decoratee>
-    using Decorator = implementation_details_::InterfaceDecorator<InterfaceType, Decoratee>;
-};
+public:
+    static constexpr ConfigType CONFIG_TYPE = ConfigType::CREATIONAL;
 
-/// @cond HIDDEN
-
-namespace implementation_details_
-{
-    template<typename Interface, typename Decoratee>
-    class InterfaceDecorator : public Decoratee
+public:
+    auto do_resolve(
+        meta::Pack<Interface>&& keys, 
+        auto& dependencies,
+        const auto& input
+    ) const
     {
-    public:
-        template<typename... Args>
-        constexpr InterfaceDecorator(Args&&... args)
-            : Decoratee(std::forward<Args>(args)...)
-        {}
+        return decoratee_.do_resolve(
+            meta::Pack<central_type_t<Decoratee>>{}, 
+            dependencies, 
+            std::optional<NoInputStub>{}
+        )
+        .transform([](auto ref) {
+            return meta::RuntimeRef<Interface> {
+                static_cast<central_type_t<Decoratee>&>(ref)
+            };
+        });
+    }
+    
+    auto do_resolve(
+        meta::Pack<const Interface>&& keys, 
+        auto& dependencies,
+        const auto& input
+    ) const
+    {
+        return decoratee_.do_resolve(
+            meta::Pack<const central_type_t<Decoratee>>{}, 
+            dependencies, 
+            std::optional<NoInputStub>{}
+        )
+        .transform([](auto ref) {
+            return meta::RuntimeRef<const Interface> {
+                static_cast<const central_type_t<Decoratee>&>(ref)
+            };
+        });
+    }
 
-        // Additional interface-specific functionality can be added here
-    };
+    template<std::size_t DependencyIndex>
+    std::optional<NoInputStub> get_dependencies_input() const
+    {
+        return std::nullopt;    
+    }
 
-}
-
-//// @endcond
+private:
+    Decoratee decoratee_;
+};
 
 }
 
