@@ -15,6 +15,8 @@
 #include <expected>
 #include <utility>
 
+#include <boost/mp11.hpp>
+
 namespace capy::di
 {
 
@@ -28,12 +30,9 @@ public:
     constexpr explicit CreationalConfigDispatcher(
         Configs&&... configs
     )
-        : configs_map_ (
-            meta::MultyKVPair {
-                resolution_keys_pack_t<Configs>{}, 
-                std::forward<Configs>(configs) 
-            }...
-        )
+        : configs_map_ { 
+            populate_configs_map(std::move(configs)...) 
+        }
     {}
 
 public:
@@ -51,19 +50,38 @@ public:
         }
         else 
         {
-            auto config_reference = maybe_config.value();
-            typename decltype(config_reference)::ReferenceType config = config_reference;
-            using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
+            Error code = Error::CANNOT_BE_RESOLVED;
+            auto configs_array_reference = maybe_config.value();
+            typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
 
-            auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
-                config,
-                DependenciesPack{}
-            );
+            for (auto config : configs_array)
+            {
+                // typename decltype(config_reference)::ReferenceType config = config_reference;
+                using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
-            return maybe_dependencies_tuple
-                .and_then([&config, &input](auto&& dependencies_tuple) {
-                    return config.do_resolve(KeyPack{}, dependencies_tuple, std::optional { input });
-                });
+                auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
+                    config,
+                    DependenciesPack{}
+                );
+
+                auto resolution = maybe_dependencies_tuple
+                    .and_then([&config, &input](auto&& dependencies_tuple) {
+                        return config.do_resolve(KeyPack{}, dependencies_tuple, std::optional { input });
+                    });
+                
+                if (resolution.has_value())
+                {
+                    return resolution;
+                }
+                else 
+                {
+                    code = resolution.error();
+                }
+            }
+
+            return std::expected<meta::RuntimeRef<Type>, Error> {
+                std::unexpected { code }
+            };
         }
     }
 
@@ -102,10 +120,51 @@ private:
         );
     }
 
+    template<typename UniqueType, typename... Args>
+    static constexpr auto collect(Args&&... args)
+    {
+        auto filtered = std::tuple_cat(
+            ([&]() {
+                if constexpr (std::is_same_v<UniqueType, std::decay_t<Args>>)
+                    return std::tuple<UniqueType>{ std::forward<Args>(args) };
+                else
+                    return std::tuple<>{};
+            }())...
+        );
+
+        return std::apply(
+            []<typename... Filtered>(Filtered&&... values)
+            {
+                return std::array<UniqueType, sizeof...(Filtered)>{
+                    std::forward<Filtered>(values)...
+                };
+            },
+            std::move(filtered)
+        );
+    }
+
+    static constexpr auto populate_configs_map(Configs&&... configs)
+    {
+        using namespace boost::mp11;
+
+        using list = mp_list<std::decay_t<Configs>...>;
+        using unique_types = mp_unique<list>;
+
+        return [&]<typename... UniqueTypes>(mp_list<UniqueTypes...>&& list) {
+            return meta::MetaMap {
+                meta::MultyKVPair {
+                    resolution_keys_pack_t<UniqueTypes>{},
+                    collect<UniqueTypes>(
+                        std::move(configs)...
+                    )
+                }...
+            };
+        }(unique_types{});
+    }
+
 private:
-    meta::MetaMap<
-        meta::MultyKVPair<resolution_keys_pack_t<Configs>, Configs>...
-    > configs_map_; 
+    using MapType = decltype(populate_configs_map(std::declval<Configs>()...));
+    MapType configs_map_; 
 };
 
 }
