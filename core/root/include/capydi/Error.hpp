@@ -39,6 +39,8 @@ enum class Error
     TAG_CONFIG_EXPECTED,
 
     TAG_MISMATCH,
+
+    NOT_ALL_INPUTS_RETRIEVED,
 };
 
 }

@@ -7,6 +7,7 @@
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
+#include <tuple>
 
 namespace capy::di
 {
@@ -33,15 +34,17 @@ public:
     std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
         meta::Pack<Key>&& keys, 
         auto& dependencies,
-        const std::optional<TagInput>& input
+        const auto& input
     ) const
     {
-        if (!input.has_value()) [[unlikely]]
+        std::optional<TagInput> tag_input = input.template retrieve_override<TagInput>();
+
+        if (!tag_input.has_value()) [[unlikely]]
         {
             return std::unexpected { Error::TAG_CONFIG_EXPECTED }; 
         }
 
-        const std::size_t input_tag = input.value().tag.value();
+        const std::size_t input_tag = tag_input.value().tag.value();
 
         if (this->tag_ != input_tag) [[unlikely]]
         {
@@ -51,24 +54,25 @@ public:
         return decoratee_.do_resolve(
             keys, 
             dependencies, 
-            std::optional<NoInputStub>{}
+            input
         );
     }
 
-    template<typename Key>
-    std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
-        meta::Pack<Key>&& keys, 
-        auto& dependencies,
-        const auto& input
-    ) const
-    {
-        return std::unexpected { Error::UNRECOGNIZED_CONFIG_INPUT };
-    }
+    // template<typename Key>
+    // std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
+    //     meta::Pack<Key>&& keys, 
+    //     auto& dependencies,
+    //     const auto& input
+    // ) const
+    // {
+    //     return std::unexpected { Error::UNRECOGNIZED_CONFIG_INPUT };
+    // }
 
     template<std::size_t DependencyIndex>
-    std::optional<NoInputStub> get_dependencies_input() const
+    meta::wrapped_with<std::optional> auto get_dependencies_input() const
     {
-        return std::nullopt;    
+        return this->decoratee_
+            .template get_dependencies_input<DependencyIndex>();    
     }
 
 private:

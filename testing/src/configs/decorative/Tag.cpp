@@ -28,15 +28,15 @@ TEST_CASE("singleton/single_tag")
             leaf1_resolution_result = container.resolve<Leaf1>();
 
         REQUIRE_FALSE(leaf1_resolution_result.has_value());
-        REQUIRE(leaf1_resolution_result.error() == Error::UNRECOGNIZED_CONFIG_INPUT);
+        REQUIRE(leaf1_resolution_result.error() == Error::TAG_CONFIG_EXPECTED);
     }
 
     SECTION("leaf_resolution:good_tag")
     {
         Resolution<Leaf1, Error> auto 
-            leaf1_resolution_result = container.resolve<Leaf1>(TagInput {
+            leaf1_resolution_result = container.resolve<Leaf1>(std::tuple { TagInput {
                 123
-            });
+            }});
 
         REQUIRE(leaf1_resolution_result.has_value());
 
@@ -48,9 +48,9 @@ TEST_CASE("singleton/single_tag")
     SECTION("leaf_const_resolution:good_tag")
     {
         Resolution<const Leaf1, Error> auto 
-            leaf1_resolution_result = container.resolve<const Leaf1>(TagInput {
+            leaf1_resolution_result = container.resolve<const Leaf1>(std::tuple { TagInput {
                 123
-            });
+            }});
 
         REQUIRE(leaf1_resolution_result.has_value());
 

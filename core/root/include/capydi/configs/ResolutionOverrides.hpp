@@ -3,6 +3,7 @@
 
 #include <capymeta/concepts/WrappedWIth.hpp>
 #include <capymeta/type_structures/StaticMaybe.hpp>
+#include <capymeta/algorithms/pack/Contains.hpp>
 #include <tuple>
 #include <concepts>
 
@@ -16,7 +17,7 @@ private:
     using OverrideHasBeenUsedFlag = bool;
     
     template<typename Override>
-    struct OverrudeCell 
+    struct OverrideCell 
     {
         Override stored_override;
         mutable OverrideHasBeenUsedFlag used;
@@ -28,25 +29,44 @@ private:
 
 public:
     constexpr explicit ResolutionOverrides(Overrides&&... overrides)
-        overrides_ { std::move(overrides)... }
+        : overrides_ { OverrideCell {
+            .stored_override = std::move(overrides), 
+            .used = false,
+        }...}
     {}
 
     template<typename Override>
-        requires requires(const ConfigsContainer& tuple) { std::get<OverrideCell<Override>>(tuple) }
-    constexpr const Override&
-        retrieve_override() const
+    constexpr std::optional<Override> retrieve_override() const
     {
-        const OverrideCell<Override>& override_cell
-            = std::get<OverrideCell<Override>>(this->overrides_);
+        using AllOverridesPack = meta::Pack<std::decay_t<Overrides>...>;
 
-        override_cell.used = true;
-        
-        return override_cell;
+        if constexpr (meta::pack_contains_t<AllOverridesPack, Override>)
+        {
+            const OverrideCell<Override>& override_cell
+                = std::get<OverrideCell<Override>>(this->overrides_);
+
+            override_cell.used = true;
+            
+            return override_cell.stored_override;
+        }
+        else 
+        {
+            return std::nullopt;
+        }
     }
 
     constexpr bool validate() const 
     {
-        return applied_overrides_count_ == sizeof...(Overrides);
+        return std::apply([](auto&&... cells){
+            return (cells.used && ...);
+        }, this->overrides_);
+    }
+
+    constexpr void reset() const 
+    {
+        return std::apply([](auto&&... cells){
+            ((cells.used = false), ...);
+        }, this->overrides_);
     }
 
 private:

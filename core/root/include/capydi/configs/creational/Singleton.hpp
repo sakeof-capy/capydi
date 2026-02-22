@@ -59,7 +59,7 @@ public:
     }
 
     template<std::size_t DependencyIndex>
-    std::optional<NoInputStub> get_dependencies_input() const
+    std::optional<std::tuple<>> get_dependencies_input() const
     {
         return std::nullopt;    
     }

@@ -4,6 +4,7 @@
 #include "capydi/configs/concepts/CreationalConfig.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
+#include <tuple>
 
 namespace capy::di
 {
@@ -38,7 +39,7 @@ public:
         return decoratee_.do_resolve(
             meta::Pack<central_type_t<Decoratee>>{}, 
             dependencies, 
-            std::optional<NoInputStub>{}
+            input
         )
         .transform([](auto ref) {
             return meta::RuntimeRef<Interface> {
@@ -56,7 +57,7 @@ public:
         return decoratee_.do_resolve(
             meta::Pack<const central_type_t<Decoratee>>{}, 
             dependencies, 
-            std::optional<NoInputStub>{}
+            input
         )
         .transform([](auto ref) {
             return meta::RuntimeRef<const Interface> {
@@ -66,9 +67,10 @@ public:
     }
 
     template<std::size_t DependencyIndex>
-    std::optional<NoInputStub> get_dependencies_input() const
+    meta::wrapped_with<std::optional> auto get_dependencies_input() const
     {
-        return std::nullopt;    
+        return this->decoratee_
+            .template get_dependencies_input<DependencyIndex>();    
     }
 
 private:

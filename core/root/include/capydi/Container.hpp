@@ -124,15 +124,15 @@ public:
     {}
 
 public: 
-    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
+    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = std::tuple<>>
     [[nodiscard]] constexpr Resolution<Type, Error> auto 
-        resolve(const InputType& input = NoInputStub{}) const
+        resolve(InputType&& input = std::tuple{}) const
     {
         /* TODO: implement dispatcher for retrieving key */
         // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
 
         return this->creational_dispatcher_
-            .template resolve<Type, KeyPack>(input)
+            .template resolve<Type, KeyPack>(std::move(input))
             .and_then([this](meta::Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
                     .template apply_configs_chain<KeyPack, Type>(entity);

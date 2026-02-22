@@ -8,6 +8,8 @@
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <initializer_list>
 
+#include <iostream>
+
 namespace capy::di
 {
 
@@ -42,8 +44,15 @@ public:
     }
 
     template<std::size_t DependencyIndex>
-    std::optional<TagInput> get_dependencies_input() const
+    meta::wrapped_with<std::optional> auto get_dependencies_input() const
     {
+        using DecorateeDependenciesTuple 
+            = typename decltype(this->decoratee_.template get_dependencies_input<DependencyIndex>())::value_type;
+        using ResultType = decltype(std::tuple_cat(
+            std::declval<DecorateeDependenciesTuple>(),
+            std::declval<std::tuple<TagInput>>()
+        ));
+
         const auto found_tag_pair_itor = std::find_if(
             this->dependency_tags_.cbegin(),
             this->dependency_tags_.cend(),
@@ -52,16 +61,37 @@ public:
             }
         );
 
-        if (found_tag_pair_itor == this->dependency_tags_.cend())
+        if (found_tag_pair_itor == this->dependency_tags_.cend()) [[unlikely]]
         {
-            return std::nullopt;
+            std::cout << "#" << DependencyIndex << ": HERE0" << std::endl;
+            return std::optional<ResultType> {
+                std::nullopt
+            };
         }
 
         const auto& [_, found_tag] = *found_tag_pair_itor;
+
+        auto decoratee_dependencies_input 
+            = this->decoratee_.template get_dependencies_input<DependencyIndex>();
         
-        return TagInput {
-            found_tag
-        };
+        if (decoratee_dependencies_input.has_value()) [[likely]] 
+        {
+            return std::optional { std::tuple_cat(
+                std::move(decoratee_dependencies_input).value(),
+                std::tuple { TagInput {
+                    found_tag
+                }}
+            )};
+        }
+        else 
+        {
+            return std::optional { std::tuple_cat(
+                std::tuple{},
+                std::tuple { TagInput {
+                    found_tag
+                }}
+            )}; 
+        }
     }
 
 private:

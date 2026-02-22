@@ -3,6 +3,7 @@
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
 #include "capydi/configs/inputs/NoInput.hpp"
+#include "capydi/configs/ResolutionOverrides.hpp"
 #include "capydi/Resolution.hpp"
 #include "capydi/Error.hpp"
 
@@ -40,9 +41,14 @@ public:
 
 public:
     
-    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
-    constexpr Resolution<Type, Error> auto resolve(const InputType& input = NoInputStub{}) const
-    {
+    template<
+        typename Type, 
+        typename KeyPack = meta::Pack<Type>, 
+        typename InputType = std::tuple<>
+    >
+    constexpr Resolution<Type, Error> auto resolve(
+        InputType&& input_tuple = std::tuple{}
+    ) const {
         auto maybe_config = this->configs_dispatch_map_.static_find(meta::Unit<KeyPack>{});
 
         if constexpr (!decltype(maybe_config)::has_value())
@@ -57,9 +63,18 @@ public:
             auto configs_array_reference = maybe_config.value();
             typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
 
+            ResolutionOverrides overrides = std::apply(
+                []<typename... T>(T&&... input_args) {
+                    return ResolutionOverrides {
+                        std::forward<T>(input_args)...
+                    };
+                },
+                std::move(input_tuple)
+            );
+
             for (auto& config_variant : configs_array)
             {
-                auto resolution = std::visit([this, &input](auto& config_reference) {
+                auto resolution = std::visit([this, &overrides](auto& config_reference) {
                     typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
                     using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
@@ -69,17 +84,26 @@ public:
                     );
 
                     return maybe_dependencies_tuple
-                        .and_then([&config, &input](auto&& dependencies_tuple) {
-                            return config.do_resolve(KeyPack{}, dependencies_tuple, std::optional { input });
+                        .and_then([&config, &overrides](auto&& dependencies_tuple) {
+                            return config.do_resolve(KeyPack{}, dependencies_tuple, overrides);
                         });
                 }, config_variant);
 
-                if (resolution.has_value()) [[likely]]
+
+                if (!resolution.has_value()) [[unlikely]]
                 {
-                    return resolution;
+                    code = resolution.error();
+                    continue;
                 }
-                
-                code = resolution.error();
+    
+                if (!overrides.validate()) [[unlikely]]
+                {
+                    code = Error::NOT_ALL_INPUTS_RETRIEVED;
+                    continue;
+                }
+
+                overrides.reset();
+                return resolution;
             }
 
             return std::expected<meta::RuntimeRef<Type>, Error> {
@@ -96,7 +120,15 @@ private:
     {
         auto dependencies_tuple = [this, &config]<std::size_t... Idx>(std::index_sequence<Idx...>) {
             return std::tuple {
-                this->resolve<Dependencies>(config.template get_dependencies_input<Idx>())...
+                [this, &config] {
+                    auto dependencies_input = config.template get_dependencies_input<Idx>();
+
+                    if (dependencies_input.has_value()) {
+                        return this->resolve<Dependencies>(dependencies_input.value());
+                    } else {
+                        return this->resolve<Dependencies>();
+                    }
+                }()...
             };
         }(std::index_sequence_for<Dependencies...>{});
 
