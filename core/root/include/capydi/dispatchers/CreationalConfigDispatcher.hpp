@@ -14,8 +14,10 @@
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <expected>
 #include <utility>
-
 #include <boost/mp11.hpp>
+#include <variant>
+
+#include <iostream>
 
 namespace capy::di
 {
@@ -30,8 +32,9 @@ public:
     constexpr explicit CreationalConfigDispatcher(
         Configs&&... configs
     )
-        : configs_map_ { 
-            populate_configs_map(std::move(configs)...) 
+        : configs_tuple_ { std::move(configs)... }
+        , configs_dispatch_map_ { 
+            populate_configs_map(this->configs_tuple_) 
         }
     {}
 
@@ -40,7 +43,7 @@ public:
     template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = NoInputStub>
     constexpr Resolution<Type, Error> auto resolve(const InputType& input = NoInputStub{}) const
     {
-        auto maybe_config = this->configs_map_.static_find(meta::Unit<KeyPack>{});
+        auto maybe_config = this->configs_dispatch_map_.static_find(meta::Unit<KeyPack>{});
 
         if constexpr (!decltype(maybe_config)::has_value())
         {
@@ -54,29 +57,29 @@ public:
             auto configs_array_reference = maybe_config.value();
             typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
 
-            for (auto config : configs_array)
+            for (auto& config_variant : configs_array)
             {
-                // typename decltype(config_reference)::ReferenceType config = config_reference;
-                using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
+                auto resolution = std::visit([this, &input](auto& config_reference) {
+                    typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
+                    using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
-                auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
-                    config,
-                    DependenciesPack{}
-                );
+                    auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
+                        config,
+                        DependenciesPack{}
+                    );
 
-                auto resolution = maybe_dependencies_tuple
-                    .and_then([&config, &input](auto&& dependencies_tuple) {
-                        return config.do_resolve(KeyPack{}, dependencies_tuple, std::optional { input });
-                    });
-                
-                if (resolution.has_value())
+                    return maybe_dependencies_tuple
+                        .and_then([&config, &input](auto&& dependencies_tuple) {
+                            return config.do_resolve(KeyPack{}, dependencies_tuple, std::optional { input });
+                        });
+                }, config_variant);
+
+                if (resolution.has_value()) [[likely]]
                 {
                     return resolution;
                 }
-                else 
-                {
-                    code = resolution.error();
-                }
+                
+                code = resolution.error();
             }
 
             return std::expected<meta::RuntimeRef<Type>, Error> {
@@ -120,51 +123,75 @@ private:
         );
     }
 
-    template<typename UniqueType, typename... Args>
-    static constexpr auto collect(Args&&... args)
+    template<typename UniqueType, typename... NonUniqueConfigs>
+    static constexpr auto collect(NonUniqueConfigs&... args)
     {
-        auto filtered = std::tuple_cat(
+        auto configs_tuple = std::tuple_cat(
             ([&]() {
-                if constexpr (std::is_same_v<UniqueType, std::decay_t<Args>>)
-                    return std::tuple<UniqueType>{ std::forward<Args>(args) };
-                else
+                // static_assert(std::same_as<UniqueType, std::decay_t<NonUniqueConfigs>>);
+
+                if constexpr (meta::pack_contains_t<
+                    resolution_keys_pack_t<NonUniqueConfigs>,
+                    UniqueType
+                >) {
+                    return std::tuple<meta::RuntimeRef<NonUniqueConfigs>> { 
+                        meta::RuntimeRef<NonUniqueConfigs> { args } 
+                    };
+                }
+                else {
                     return std::tuple<>{};
+                }
             }())...
         );
 
         return std::apply(
-            []<typename... Filtered>(Filtered&&... values)
-            {
-                return std::array<UniqueType, sizeof...(Filtered)>{
-                    std::forward<Filtered>(values)...
+            []<typename... T>(T&&... configs) {
+                using VariantType = std::variant<std::decay_t<T>...>;
+                return std::array<VariantType, sizeof...(configs)> { 
+                    VariantType { std::forward<T>(configs) }...
                 };
             },
-            std::move(filtered)
+            std::move(configs_tuple)
         );
     }
 
-    static constexpr auto populate_configs_map(Configs&&... configs)
-    {
+    template<meta::wrapped_with<std::tuple> ConfigsTuple>
+    static constexpr auto populate_configs_map(
+        ConfigsTuple& configs_tuple
+    ) {
         using namespace boost::mp11;
 
-        using list = mp_list<std::decay_t<Configs>...>;
-        using unique_types = mp_unique<list>;
+        using KeysList = mp_flatten<mp_list<
+            meta::rebind_t<
+                resolution_keys_pack_t<Configs>, 
+                meta::Pack, 
+                mp_list
+            >...
+        >>;
 
-        return [&]<typename... UniqueTypes>(mp_list<UniqueTypes...>&& list) {
+        using UniqueKeysList = mp_unique<KeysList>;
+
+        return [&]<typename... UniqueKeys>(mp_list<UniqueKeys...>&& list) {
             return meta::MetaMap {
-                meta::MultyKVPair {
-                    resolution_keys_pack_t<UniqueTypes>{},
-                    collect<UniqueTypes>(
-                        std::move(configs)...
+                meta::KVPair {
+                    meta::Unit<UniqueKeys>{},
+                    std::apply(
+                        [](auto&... args) {
+                            return collect<UniqueKeys>(args...);
+                        },
+                        configs_tuple
                     )
                 }...
             };
-        }(unique_types{});
+        }(UniqueKeysList{});
     }
 
 private:
-    using MapType = decltype(populate_configs_map(std::declval<Configs>()...));
-    MapType configs_map_; 
+    using ConfigsTupleType = std::tuple<Configs...>;
+    using MapType = decltype(populate_configs_map(std::declval<ConfigsTupleType&>()));
+
+    ConfigsTupleType configs_tuple_;
+    MapType configs_dispatch_map_; 
 };
 
 }

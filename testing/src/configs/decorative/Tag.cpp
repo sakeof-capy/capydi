@@ -89,10 +89,17 @@ TEST_CASE("singleton/multiple_tags")
     const DI container {
         Singleton<Leaf1>{},
         Singleton<Leaf2>{},
+        Singleton<Spine1>{},
         Tag { 111, Singleton<Spine1>{} },
         Tag { 222, Singleton<Spine2>{} },
         DependencyTags { {{ 0, 111 }, {1, 222}}, Singleton<RootSpine>{} },
     };
+
+
+    Resolution<Spine1, Error> auto 
+        spine_result = container.resolve<Spine1>();//(TagInput { 111 });
+
+    REQUIRE(spine_result.has_value());
 
     Resolution<RootSpine, Error> auto 
         root_resolution_result = container.resolve<RootSpine>();
@@ -103,3 +110,20 @@ TEST_CASE("singleton/multiple_tags")
 
     REQUIRE(root.sum() == RootSpine::IDENTIFIER);
 }
+
+/*
+
+capy::meta::MetaMap<
+    capy::meta::KVPair<
+        capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 
+        std::array<capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 0> 
+    >, 
+    capy::meta::KVPair<
+        capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 
+        std::array<capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 0> 
+    >
+>
+
+
+
+*/
