@@ -5,6 +5,7 @@
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
+#include <capymeta/primitives/Pack.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
 
 namespace capy::di
@@ -20,7 +21,7 @@ struct Decorator
 {
 public:
     using RelatedEntity = Decoratee;
-    using RelatedKey = RelatedKey_;
+    using RelatedKeysPack = meta::Pack<RelatedKey_>;
 
 public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;

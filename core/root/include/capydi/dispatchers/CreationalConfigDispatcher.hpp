@@ -18,7 +18,6 @@
 #include <boost/mp11.hpp>
 #include <variant>
 
-#include <iostream>
 
 namespace capy::di
 {
@@ -160,8 +159,6 @@ private:
     {
         auto configs_tuple = std::tuple_cat(
             ([&]() {
-                // static_assert(std::same_as<UniqueType, std::decay_t<NonUniqueConfigs>>);
-
                 if constexpr (meta::pack_contains_t<
                     resolution_keys_pack_t<NonUniqueConfigs>,
                     UniqueType

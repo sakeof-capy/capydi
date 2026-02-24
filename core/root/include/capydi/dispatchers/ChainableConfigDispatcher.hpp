@@ -9,48 +9,28 @@
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Template.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
+#include <boost/mp11.hpp>
 #include <concepts>
 #include <expected>
+#include <variant>
 
 namespace capy::di
 {
 
 template<ChainableConfig... Configs>
-class ChainableConfigDispatcher : private Configs...
+class ChainableConfigDispatcher
 {
-private:
-    using Configs::pipe...;
-
-private:
-    using ConfigsPack = meta::Pack<Configs...>;
-
-    template<typename RelatedKey>
-    struct RelatedConfigPredicate
-    {
-        template<typename Config>
-        struct Predicate
-        {
-            static constexpr bool value = std::same_as<
-                get_related_key_t<Config>,
-                RelatedKey
-            >;
-        };
-    };
-
-    template<typename RelatedKey>
-    using related_configs_pack_t = meta::pack_filter_t<
-        ConfigsPack, 
-        meta::template_fv<
-            RelatedConfigPredicate<RelatedKey>::template Predicate,
-            meta::MetaArity::N1
-        >
-    >;
-
 public:
-    constexpr explicit ChainableConfigDispatcher(Configs&&... configs) 
-        : Configs(std::move(configs))...
+    constexpr explicit ChainableConfigDispatcher( 
+        Configs&&... configs
+    )
+        : configs_tuple_ { std::move(configs)... }
+        , configs_dispatch_map_ { 
+            populate_configs_map(this->configs_tuple_) 
+        }
     {}
 
+public:
     template<typename RelatedKey, typename RelatedEntity>
     [[nodiscard]] constexpr Resolution<
         RelatedEntity, 
@@ -60,56 +40,135 @@ public:
             meta::Reference<RelatedEntity> auto entity
         ) const 
     {
-        using RelatedConfigsPack = related_configs_pack_t<RelatedKey>;
-        
-        return this->perform_piping(       
-            meta::Pack<RelatedEntity>{},   
-            RelatedConfigsPack{},   
-            entity                  
-        );
+        auto maybe_configs_array = this->configs_dispatch_map_
+            .static_find(meta::Unit<RelatedKey>{});
+
+        if constexpr (!maybe_configs_array.has_value()) [[unlikely]]
+        {
+            return std::expected<meta::RuntimeRef<RelatedEntity>, Error> {
+                entity
+            };
+        }
+        else
+        {
+            auto configs_array_reference = maybe_configs_array.value();
+            typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
+            return this->perform_piping<RelatedEntity>(configs_array, entity, 0);
+        }
     }
-    
-private:
-    template<
-        typename RelatedEntity, 
-        typename HeadConfig, 
-        typename... TailConfigs
-    >
-    [[nodiscard]] constexpr Resolution<RelatedEntity, Error> auto 
+
+    template<typename RelatedEntity>
+    [[nodiscard]] constexpr Resolution<
+        RelatedEntity, 
+        Error
+    > auto
         perform_piping(
-            meta::Pack<RelatedEntity>&&,
-            meta::Pack<HeadConfig, TailConfigs...>&&, 
-            meta::Reference<RelatedEntity> auto entity
+            const auto& configs_array,
+            meta::Reference<RelatedEntity> auto entity,
+            std::size_t current_index
         ) const 
     {
-        const HeadConfig& 
-            config = static_cast<const HeadConfig&>(*this);
+        if (current_index >= configs_array.size())
+        {
+            return std::expected<meta::RuntimeRef<RelatedEntity>, Error> { 
+                entity 
+            };
+        }
 
-        return config
-            .pipe(entity)
-            .and_then([this](meta::Reference<RelatedEntity> auto processed_entity) {
-                return this->perform_piping(
-                    meta::Pack<RelatedEntity>{},
-                    meta::Pack<TailConfigs...>{}, 
-                    processed_entity
+        return 
+            std::visit(
+                [&entity](const auto& config_reference) {
+                    typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
+                    return config.pipe(entity);
+                },
+                configs_array[current_index]
+            )
+            .and_then([this, &configs_array, current_index](
+                meta::Reference<RelatedEntity> auto processed_entity
+            ) {
+                return this->perform_piping<RelatedEntity>(
+                    configs_array, 
+                    processed_entity, 
+                    current_index + 1
                 );
             });
     }
 
-    template<
-        typename RelatedEntity
-    >
-    [[nodiscard]] constexpr Resolution<RelatedEntity, Error> auto
-        perform_piping(
-            meta::Pack<RelatedEntity>&&,
-            meta::Pack<>&&, 
-            meta::Reference<RelatedEntity> auto entity
-        ) const 
+private:
+    template<typename UniqueType, typename... NonUniqueConfigs>
+    static constexpr auto collect(NonUniqueConfigs&... args)
     {
-        return std::expected<meta::RuntimeRef<RelatedEntity>, Error> { 
-            entity 
-        };
+        using namespace boost::mp11;
+
+        auto configs_tuple = std::tuple_cat(
+            ([&]() {
+                if constexpr (meta::pack_contains_t<
+                    get_related_keys_pack_t<NonUniqueConfigs>,
+                    UniqueType
+                >) {
+                    return std::tuple<meta::RuntimeRef<NonUniqueConfigs>> { 
+                        meta::RuntimeRef<NonUniqueConfigs> { args } 
+                    };
+                }
+                else {
+                    return std::tuple<>{};
+                }
+            }())...
+        );
+
+        return std::apply(
+            []<typename... T>(T&&... configs) {
+                using UniqueTs = mp_unique<mp_list<std::decay_t<T>...>>;
+                using VariantType = meta::rebind_t<
+                    UniqueTs, 
+                    mp_list, 
+                    std::variant
+                >;
+                return std::array<VariantType, sizeof...(configs)> { 
+                    VariantType { std::forward<T>(configs) }...
+                };
+            },
+            std::move(configs_tuple)
+        );
     }
+
+    template<meta::wrapped_with<std::tuple> ConfigsTuple>
+    static constexpr auto populate_configs_map(
+        ConfigsTuple& configs_tuple
+    ) {
+        using namespace boost::mp11;
+
+        using KeysList = mp_flatten<mp_list<
+            meta::rebind_t<
+                get_related_keys_pack_t<Configs>, 
+                meta::Pack, 
+                mp_list
+            >...
+        >>;
+
+        using UniqueKeysList = mp_unique<KeysList>;
+
+        return [&]<typename... UniqueKeys>(mp_list<UniqueKeys...>&& list) {
+            return meta::MetaMap {
+                meta::KVPair {
+                    meta::Unit<UniqueKeys>{},
+                    std::apply(
+                        [](auto&... args) {
+                            return collect<UniqueKeys>(args...);
+                        },
+                        configs_tuple
+                    )
+                }...
+            };
+        }(UniqueKeysList{});
+    }
+
+private:
+    using ConfigsTupleType = std::tuple<Configs...>;
+    using MapType = decltype(populate_configs_map(std::declval<ConfigsTupleType&>()));
+
+    ConfigsTupleType configs_tuple_;
+    MapType configs_dispatch_map_; 
 };
 
 }
