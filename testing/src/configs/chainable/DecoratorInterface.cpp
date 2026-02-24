@@ -3,6 +3,9 @@
 #include <capydi/Container.hpp>
 #include <capydi/configs/decorative/Interface.hpp>
 #include <capydi/configs/chainable/Decorator.hpp>
+#include <capydi/configs/creational/Singleton.hpp>
+#include <capydi/configs/decorative/Tag.hpp>
+#include <capydi/configs/inputs/TagInput.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace capy::di;
@@ -14,6 +17,7 @@ public:
 
 public:
     virtual int get_value() = 0;
+    virtual const char* get_name() const = 0;
 };
 
 class Value1 : public IValue
@@ -22,9 +26,14 @@ public:
     static constexpr int VALUE = 1;
 
 public:
-    int get_value() override 
+    int get_value() override
     {
         return VALUE;
+    }
+
+    const char* get_name() const override
+    {
+        return "value1_name";
     }
 
 public:
@@ -40,9 +49,14 @@ public:
     static constexpr int VALUE = 3;
 
 public:
-    int get_value() override 
+    int get_value() override
     {
         return VALUE;
+    }
+
+    const char* get_name() const override
+    {
+        return "value3_name";
     }
 
 public:
@@ -60,10 +74,15 @@ public:
     {}
 
 public:
-    int get_value() override 
+    int get_value() override
     {
         return 2 * decoratee_.get_value();
-    } 
+    }
+
+    const char* get_name() const override
+    {
+        return decoratee_.get_name();
+    }
 
 public:
     static MultiplyBy2_Decorator create(IValue& decoratee)
@@ -76,17 +95,54 @@ private:
 };
 
 TEST_CASE("decorator:as_interface") {
-    const DI container {
-        AsInterface { capy::meta::Unit<IValue>{}, Singleton<Value1>{} },
-        // AsInterface { capy::meta::Unit<IValue>{}, Singleton<Value3>{} },
-        Decorator<MultiplyBy2_Decorator, IValue>{}
-    };
+    SECTION("single_decorator")
+    {
+        const DI container {
+            Singleton<Value1>{}
+                .with<Interface>(capy::meta::Unit<IValue>{}),
+            Decorator<MultiplyBy2_Decorator, IValue>{}
+        };
 
-    auto value1_resolution = container.resolve<IValue>();
+        auto value1_resolution = container.resolve<IValue>();
 
-    REQUIRE(value1_resolution.has_value());
+        REQUIRE(value1_resolution.has_value());
 
-    IValue& value1 = value1_resolution.value();
+        IValue& value1 = value1_resolution.value();
 
-    REQUIRE(value1.get_value() == Value1::VALUE * 2);
+        REQUIRE(value1.get_value() == Value1::VALUE * 2);
+    }
+
+    SECTION("multiple_implementations")
+    {
+        const DI container {
+            Singleton<Value1>{}
+                .with<Interface>(capy::meta::Unit<IValue>{})
+                .with<Tag>("value1-tag"),
+            Singleton<Value3>{}
+                .with<Interface>(capy::meta::Unit<IValue>{})
+                .with<Tag>("value3-tag"),
+            Decorator<MultiplyBy2_Decorator, IValue>{}
+        };
+
+        auto value1_resolution = container.resolve<IValue>(std::tuple { TagInput {
+            "value1-tag"
+        }});
+
+        REQUIRE(value1_resolution.has_value());
+
+        IValue& value1 = value1_resolution.value();
+
+        REQUIRE(value1.get_value() == Value1::VALUE * 2);
+
+
+        auto value3_resolution = container.resolve<IValue>(std::tuple { TagInput {
+            "value3-tag"
+        }});
+
+        REQUIRE(value3_resolution.has_value());
+
+        IValue& value3 = value3_resolution.value();
+        REQUIRE(std::string { value3.get_name() } == "value3_name");
+        REQUIRE(value3.get_value() == Value3::VALUE * 2);
+    }
 }

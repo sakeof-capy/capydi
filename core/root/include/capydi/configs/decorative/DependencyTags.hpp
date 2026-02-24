@@ -7,21 +7,22 @@
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <initializer_list>
-
-#include <iostream>
+#include <array>
 
 namespace capy::di
 {
 
-template<CreationalConfig Decoratee>
+using DependencyTagPair = std::pair<std::size_t, tag_t>;
+
+namespace implementation_details_
+{
+
+template<CreationalConfig Decoratee, std::size_t SIZE>
 class DependencyTags
 {
 public:
-    using DependencyTagPair = std::pair<std::size_t, std::size_t>;
-
-public:
     constexpr explicit DependencyTags(
-        std::initializer_list<DependencyTagPair> dependency_tags, 
+        std::array<DependencyTagPair, SIZE> dependency_tags, 
         Decoratee&& decoratee
     )
         : dependency_tags_ { dependency_tags }
@@ -63,7 +64,6 @@ public:
 
         if (found_tag_pair_itor == this->dependency_tags_.cend()) [[unlikely]]
         {
-            std::cout << "#" << DependencyIndex << ": HERE0" << std::endl;
             return std::optional<ResultType> {
                 std::nullopt
             };
@@ -95,8 +95,24 @@ public:
     }
 
 private:
-    std::vector<DependencyTagPair> dependency_tags_;
+    std::array<DependencyTagPair, SIZE> dependency_tags_;
     Decoratee decoratee_;
+};
+
+}
+
+struct DependencyTags
+{
+    template<CreationalConfig Decoratee, std::size_t SIZE>
+    static constexpr implementation_details_::DependencyTags<Decoratee, SIZE> decorate(
+        Decoratee&& decoratee, 
+        std::array<DependencyTagPair, SIZE> dependency_tags
+    ) {
+        return implementation_details_::DependencyTags<Decoratee, SIZE> {
+            dependency_tags,
+            std::forward<Decoratee>(decoratee)
+        };
+    }
 };
 
 }

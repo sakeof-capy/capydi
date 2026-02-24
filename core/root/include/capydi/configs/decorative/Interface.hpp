@@ -2,6 +2,7 @@
 #define INTERFACE_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
+#include "capydi/configs/decorative/DecoratableConfig.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
@@ -9,9 +10,15 @@
 namespace capy::di
 {
 
+namespace implementation_details_
+{
+
 template<CreationalConfig Decoratee, typename Interface>
     requires std::derived_from<central_type_t<Decoratee>, Interface>
 class AsInterface
+    : public DecoratableConfig<
+        AsInterface<Decoratee, Interface>
+    >
 {
 public:
     constexpr explicit AsInterface(meta::Unit<Interface>, Decoratee&& decoratee)
@@ -31,7 +38,7 @@ public:
 
 public:
     auto do_resolve(
-        meta::Pack<Interface>&& keys, 
+        meta::Pack<Interface> keys, 
         auto& dependencies,
         const auto& input
     ) const
@@ -49,7 +56,7 @@ public:
     }
     
     auto do_resolve(
-        meta::Pack<const Interface>&& keys, 
+        meta::Pack<const Interface> keys, 
         auto& dependencies,
         const auto& input
     ) const
@@ -75,6 +82,22 @@ public:
 
 private:
     Decoratee decoratee_;
+};
+
+}
+
+struct Interface
+{
+    template<CreationalConfig Decoratee, typename InterfaceType>
+    static constexpr implementation_details_::AsInterface<Decoratee, InterfaceType> decorate(
+        Decoratee&& decoratee, 
+        meta::Unit<InterfaceType> interface_deducer
+    ) {
+        return implementation_details_::AsInterface<Decoratee, InterfaceType> {
+            interface_deducer,
+            std::forward<Decoratee>(decoratee)
+        };
+    }
 };
 
 }

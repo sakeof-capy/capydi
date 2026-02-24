@@ -9,11 +9,10 @@ TEST_CASE("inputs")
 {
     SECTION("inputs:tag_input")
     {
-        const std::size_t tag = 123;
-        TagInput input { tag };
+        TagInput input { "some_tag" };
         
         REQUIRE_FALSE(input.validate());
-        REQUIRE(input.tag.value() == tag);
+        REQUIRE(input.tag.value() == "some_tag");
         REQUIRE(input.validate());
     }
 }

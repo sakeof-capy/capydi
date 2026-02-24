@@ -1,8 +1,9 @@
-#ifndef SINGLETON_HPP_
-#define SINGLETON_HPP_
+#ifndef CAPYDI_TRANSIENT_HPP_
+#define CAPYDI_TRANSIENT_HPP_
 
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/ConfigType.hpp"
+#include "capydi/Error.hpp"
 
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
@@ -10,20 +11,21 @@
 #include <capymeta/primitives/Pack.hpp>
 #include <tuple>
 #include <expected>
+#include <vector>
 
 namespace capy::di
 {
 
 template<typename Type>
-class Singleton 
+class Transient
     : public DecoratableConfig<
-        Singleton<Type>
+        Transient<Type>
     >
 {
 public:
     using CentralType = Type;
     using /* meta::Pack<meta::Pack<?>> */ ResolutionKeysPack = meta::Pack<
-        meta::Pack<Type>, 
+        meta::Pack<Type>,
         meta::Pack<const Type>
     >;
 
@@ -35,24 +37,21 @@ public:
 public:
     template<typename... Dependencies>
     std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
-        meta::Pack<Type> keys, 
+        meta::Pack<Type> keys,
         std::tuple<Dependencies...>& dependencies,
         const auto& input
     ) const
     {
-        if (!this->singleton_value_.has_value())
-        {
-            this->singleton_value_.emplace(
-                std::apply(Type::create, dependencies)
-            );
-        }
+        this->values_.push_back(
+            std::apply(Type::create, dependencies)
+        );
 
-        return meta::RuntimeRef<Type> { this->singleton_value_.value() };
+        return meta::RuntimeRef<Type> { this->values_.back() };
     }
 
     template<typename... Dependencies>
     std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
-        meta::Pack<const Type> keys, 
+        meta::Pack<const Type> keys,
         std::tuple<Dependencies...>& dependencies,
         const auto& input
     ) const
@@ -65,13 +64,14 @@ public:
     template<std::size_t DependencyIndex>
     std::optional<std::tuple<>> get_dependencies_input() const
     {
-        return std::nullopt;    
+        return std::nullopt;
     }
 
 private:
-    mutable std::optional<Type> singleton_value_ = std::nullopt;
+    mutable std::vector<Type> values_;
 };
+
 
 }
 
-#endif // !SINGLETON_HPP
+#endif //CAPYDI_TRANSIENT_HPP_

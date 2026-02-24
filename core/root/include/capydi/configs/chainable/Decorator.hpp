@@ -1,14 +1,11 @@
 #ifndef DECORATOR_HPP_
 #define DECORATOR_HPP_
 
-#include "capydi/configs/concepts/ChainableConfig.hpp"
-#include "capydi/configs/creational/Singleton.hpp"
+#include "capydi/configs/creational/Transient.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
-#include <type_traits>
-#include <expected>
 
 namespace capy::di
 {
@@ -17,7 +14,7 @@ template<
     typename Decorator_,
     typename Decoratee, 
     typename RelatedKey_ = meta::Pack<Decoratee>, 
-    typename InnerConfig = Singleton<Decorator_>
+    typename InnerConfig = Transient<Decorator_>
 >
 struct Decorator
 {

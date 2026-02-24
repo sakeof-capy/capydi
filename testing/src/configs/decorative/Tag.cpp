@@ -15,10 +15,16 @@ TEST_CASE("singleton/single_tag")
     using namespace capy::di::spine_leaf_3;
 
     const DI container {
-        Tag{ 123, Singleton<Leaf1>{} },
+        Singleton<Leaf1>{}
+            .with<Tag>("tag1"),
+
         Singleton<Leaf2>{},
         Singleton<Spine1>{},
-        DependencyTags { {{ 0, 123 }}, Singleton<Spine2>{} },
+        Singleton<Spine2>{}
+            .with<DependencyTags>(std::array {
+                DependencyTagPair { 0, "tag1" }
+            }),
+        // DependencyTags { {{ 0, "tag1" }}, Singleton<Spine2>{} },
         Singleton<RootSpine>{},
     };
 
@@ -35,7 +41,7 @@ TEST_CASE("singleton/single_tag")
     {
         Resolution<Leaf1, Error> auto 
             leaf1_resolution_result = container.resolve<Leaf1>(std::tuple { TagInput {
-                123
+                "tag1"
             }});
 
         REQUIRE(leaf1_resolution_result.has_value());
@@ -49,7 +55,7 @@ TEST_CASE("singleton/single_tag")
     {
         Resolution<const Leaf1, Error> auto 
             leaf1_resolution_result = container.resolve<const Leaf1>(std::tuple { TagInput {
-                123
+                "tag1"
             }});
 
         REQUIRE(leaf1_resolution_result.has_value());
@@ -90,9 +96,19 @@ TEST_CASE("singleton/multiple_tags")
         Singleton<Leaf1>{},
         Singleton<Leaf2>{},
         Singleton<Spine1>{},
-        Tag { 111, Singleton<Spine1>{} },
-        Tag { 222, Singleton<Spine2>{} },
-        DependencyTags { {{ 0, 111 }, {1, 222}}, Singleton<RootSpine>{} },
+
+        Singleton<Spine1>{}
+            .with<Tag>("some-tag1"),
+
+        Singleton<Spine2>{}
+            .with<Tag>("some-tag2"),
+
+        Singleton<RootSpine>{}
+            .with<DependencyTags>(std::array {
+                DependencyTagPair { 0, "some-tag1" }, 
+                DependencyTagPair { 1, "some-tag2" }
+            })
+        // DependencyTags { {{ 0, "some-tag1" }, {1, "some-tag2"}}, Singleton<RootSpine>{} },
     };
 
 

@@ -2,6 +2,7 @@
 #include "hierarchies/SpineLeaf3.hpp"
 
 #include <capydi/Container.hpp>
+#include <capydi/configs/creational/Singleton.hpp>
 #include <capydi/configs/chainable/Decorator.hpp>
 #include <catch2/catch_test_macros.hpp>
 

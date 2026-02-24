@@ -10,6 +10,7 @@
 #ifndef CREATIONAL_CONFIG_HPP_
 #define CREATIONAL_CONFIG_HPP_
 
+#include "capydi/configs/ConfigType.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Pack.hpp>
