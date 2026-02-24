@@ -12,6 +12,7 @@
 #include <tuple>
 #include <expected>
 #include <vector>
+#include <memory>
 
 namespace capy::di
 {
@@ -42,11 +43,11 @@ public:
         const auto& input
     ) const
     {
-        this->values_.push_back(
+        this->values_.push_back(std::make_unique<Type>(
             std::apply(Type::create, dependencies)
-        );
+        ));
 
-        return meta::RuntimeRef<Type> { this->values_.back() };
+        return meta::RuntimeRef<Type> { *this->values_.back() };
     }
 
     template<typename... Dependencies>
@@ -68,7 +69,7 @@ public:
     }
 
 private:
-    mutable std::vector<Type> values_;
+    mutable std::vector<std::unique_ptr<Type>> values_;
 };
 
 

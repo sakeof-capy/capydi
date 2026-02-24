@@ -121,28 +121,27 @@ TEST_CASE("decorator:as_interface") {
             Singleton<Value3>{}
                 .with<Interface>(capy::meta::Unit<IValue>{})
                 .with<Tag>("value3-tag"),
-            Decorator<MultiplyBy2_Decorator, IValue>{}
+            Decorator<MultiplyBy2_Decorator, IValue>{},
         };
 
         auto value1_resolution = container.resolve<IValue>(std::tuple { TagInput {
             "value1-tag"
         }});
 
-        REQUIRE(value1_resolution.has_value());
-
-        IValue& value1 = value1_resolution.value();
-
-        REQUIRE(value1.get_value() == Value1::VALUE * 2);
-
-
         auto value3_resolution = container.resolve<IValue>(std::tuple { TagInput {
             "value3-tag"
         }});
 
+        REQUIRE(value1_resolution.has_value());
         REQUIRE(value3_resolution.has_value());
 
+        IValue& value1 = value1_resolution.value();
         IValue& value3 = value3_resolution.value();
-        REQUIRE(std::string { value3.get_name() } == "value3_name");
+
+        REQUIRE(value1.get_value() == Value1::VALUE * 2);
         REQUIRE(value3.get_value() == Value3::VALUE * 2);
+
+        REQUIRE(std::string { value1.get_name() } == "value1_name");
+        REQUIRE(std::string { value3.get_name() } == "value3_name");
     }
 }
