@@ -58,7 +58,7 @@ template<typename Config>
 concept ChainableConfig = 
     requires() {
         typename Config::RelatedEntity;
-        typename Config::RelatedKey;
+        typename Config::RelatedKeysPack;
         Config::CONFIG_TYPE;
     }
     // && requires(
@@ -93,7 +93,7 @@ using get_related_entity_t = typename Config::RelatedEntity;
 
 /// Helper alias to extract the key type from a ChainableConfig
 template<ChainableConfig Config> 
-using get_related_key_t = typename Config::RelatedKey;
+using get_related_keys_pack_t = typename Config::RelatedKeysPack;
 
 }
 

@@ -7,8 +7,27 @@ namespace capy::di
 template<typename Self>
 struct DecoratableConfig
 {
-    template<typename DecorativeConfig>
-    using with = DecorativeConfig::template Decorator<Self>;
+    template<typename Decorator, typename... Args>
+    auto with(Args&&... args) &&
+    {
+        return Decorator::decorate(
+            std::move(static_cast<Self&>(*this)),
+            std::forward<Args>(args)...
+        );
+    }
+};
+
+template<typename Self>
+struct DecoratableChainableConfig
+{
+    template<typename Decorator, typename... Args>
+    auto with(Args&&... args) &&
+    {
+        return Decorator::decorate_chainable(
+            std::move(static_cast<Self&>(*this)),
+            std::forward<Args>(args)...
+        );
+    }
 };
 
 }

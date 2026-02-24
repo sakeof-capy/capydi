@@ -10,6 +10,7 @@
 #ifndef CREATIONAL_CONFIG_HPP_
 #define CREATIONAL_CONFIG_HPP_
 
+#include "capydi/configs/ConfigType.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Pack.hpp>
@@ -76,6 +77,9 @@ using central_type_t = typename Config::CentralType;
 /// Helper alias to extract the resolution keys from a CreationalConfig
 template<CreationalConfig Config>
 using resolution_keys_pack_t = typename Config::ResolutionKeysPack;
+
+template<CreationalConfig Config>
+using dependencies_pack_t = typename Config::DependenciesPack;
 
 }  
 

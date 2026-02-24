@@ -1,44 +1,145 @@
-// #define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
-// #include "hierarchies/SpineLeaf3.hpp"
+#define CATCH_CONFIG_RUNTIME_STATIC_REQUIRE
+#include "hierarchies/SpineLeaf3.hpp"
 
-// #include <capydi/Container.hpp>
-// #include <capydi/configs/decorative/Tag.hpp>
-// #include <capydi/configs/creational/Singleton.hpp>
-// #include <catch2/catch_test_macros.hpp>
+#include <capydi/Container.hpp>
+#include <capydi/configs/decorative/Tag.hpp>
+#include <capydi/configs/decorative/DependencyTags.hpp>
+#include <capydi/configs/creational/Singleton.hpp>
+#include <capydi/configs/inputs/TagInput.hpp>
+#include <catch2/catch_test_macros.hpp>
 
-// using capy::di::DI;
-// using capy::di::Error;
-// using capy::di::Resolution;
-// using capy::di::Singleton;
-// using capy::di::Tag;
-// using capy::di::TagType;
+using namespace capy::di;
 
-// TEST_CASE("singleton/tag")
-// {
-//     using namespace capy::di::spine_leaf_3;
+TEST_CASE("singleton/single_tag")
+{
+    using namespace capy::di::spine_leaf_3;
 
-//     const DI container {
-//         Singleton<Leaf1>
-//             ::with<Tag<123>>
-//         {},
-//         Singleton<Leaf2>{},
-//         Singleton<Spine1>{},
-//         Singleton<Spine2>{},
-//         Singleton<RootSpine>{},
-//     };
+    const DI container {
+        Singleton<Leaf1>{}
+            .with<Tag>("tag1"),
 
-//     SECTION("leaf_resolution")
-//     {
-//         using Key = capy::meta::Pack<Leaf1, capy::meta::ValueUnit<capy::di::TagType{123}>>;
+        Singleton<Leaf2>{},
+        Singleton<Spine1>{},
+        Singleton<Spine2>{}
+            .with<DependencyTags>(std::array {
+                DependencyTagPair { 0, "tag1" }
+            }),
+        // DependencyTags { {{ 0, "tag1" }}, Singleton<Spine2>{} },
+        Singleton<RootSpine>{},
+    };
 
-//         Resolution<Leaf1, Error> auto 
-//             leaf1_resolution_result = container.resolve<Leaf1, Key>();
+    SECTION("leaf_resolution:error_tag")
+    {
+        Resolution<Leaf1, Error> auto 
+            leaf1_resolution_result = container.resolve<Leaf1>();
 
-//         REQUIRE(leaf1_resolution_result.has_value());
+        REQUIRE_FALSE(leaf1_resolution_result.has_value());
+        REQUIRE(leaf1_resolution_result.error() == Error::TAG_CONFIG_EXPECTED);
+    }
 
-//         Leaf1& leaf1 = leaf1_resolution_result.value();
+    SECTION("leaf_resolution:good_tag")
+    {
+        Resolution<Leaf1, Error> auto 
+            leaf1_resolution_result = container.resolve<Leaf1>(std::tuple { TagInput {
+                "tag1"
+            }});
 
-//         REQUIRE(leaf1.get() == Leaf1::IDENTIFIER);
-//     }
-// }
+        REQUIRE(leaf1_resolution_result.has_value());
 
+        Leaf1& leaf1 = leaf1_resolution_result.value();
+
+        REQUIRE(leaf1.get() == Leaf1::IDENTIFIER);
+    }
+
+    SECTION("leaf_const_resolution:good_tag")
+    {
+        Resolution<const Leaf1, Error> auto 
+            leaf1_resolution_result = container.resolve<const Leaf1>(std::tuple { TagInput {
+                "tag1"
+            }});
+
+        REQUIRE(leaf1_resolution_result.has_value());
+
+        const Leaf1& leaf1 = leaf1_resolution_result.value();
+
+        REQUIRE(leaf1.get() == Leaf1::IDENTIFIER);
+    }
+
+    SECTION("spine_resolution:bad_tag")
+    {
+        Resolution<Spine1, Error> auto 
+            spine1_resolution_result = container.resolve<Spine1>();
+
+        REQUIRE_FALSE(spine1_resolution_result.has_value());
+        REQUIRE(spine1_resolution_result.error() == Error::DEPENDENCY_CANNOT_BE_RESOLVED); 
+        // TODO: return error from config, not from dispatcher (DEPENDENCY_CANNOT_BE_RESOLVED)
+    }
+
+    SECTION("spine_resolution:good_tag")
+    {
+        Resolution<Spine2, Error> auto 
+            spine2_resolution_result = container.resolve<Spine2>();
+
+        REQUIRE(spine2_resolution_result.has_value());
+
+        const Spine2& spine2 = spine2_resolution_result.value();
+
+        REQUIRE(spine2.sum() == Spine2::IDENTIFIER);
+    }
+}
+
+TEST_CASE("singleton/multiple_tags")
+{
+    using namespace capy::di::spine_leaf_3;
+
+    const DI container {
+        Singleton<Leaf1>{},
+        Singleton<Leaf2>{},
+        Singleton<Spine1>{},
+
+        Singleton<Spine1>{}
+            .with<Tag>("some-tag1"),
+
+        Singleton<Spine2>{}
+            .with<Tag>("some-tag2"),
+
+        Singleton<RootSpine>{}
+            .with<DependencyTags>(std::array {
+                DependencyTagPair { 0, "some-tag1" }, 
+                DependencyTagPair { 1, "some-tag2" }
+            })
+        // DependencyTags { {{ 0, "some-tag1" }, {1, "some-tag2"}}, Singleton<RootSpine>{} },
+    };
+
+
+    Resolution<Spine1, Error> auto 
+        spine_result = container.resolve<Spine1>();//(TagInput { 111 });
+
+    REQUIRE(spine_result.has_value());
+
+    Resolution<RootSpine, Error> auto 
+        root_resolution_result = container.resolve<RootSpine>();
+
+    REQUIRE(root_resolution_result.has_value());
+
+    const RootSpine& root = root_resolution_result.value();
+
+    REQUIRE(root.sum() == RootSpine::IDENTIFIER);
+}
+
+/*
+
+capy::meta::MetaMap<
+    capy::meta::KVPair<
+        capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 
+        std::array<capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 0> 
+    >, 
+    capy::meta::KVPair<
+        capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 
+        std::array<capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 0> 
+    >
+>
+
+
+
+*/

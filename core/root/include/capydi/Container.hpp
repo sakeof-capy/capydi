@@ -50,6 +50,7 @@
 #include "dispatchers/CreationalConfigDispatcher.hpp"
 #include "dispatchers/ChainableConfigDispatcher.hpp"
 #include "configs/ConfigClassifier.hpp"
+#include "configs/inputs/NoInput.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
@@ -123,19 +124,24 @@ public:
     {}
 
 public: 
-    template<Creatable Type, typename KeyPack = meta::Pack<Type>>
-    [[nodiscard]] constexpr Resolution<Type, Error> auto resolve() const
+    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = std::tuple<>>
+    [[nodiscard]] constexpr Resolution<Type, Error> auto 
+        resolve(InputType&& input = std::tuple{}) const
     {
         /* TODO: implement dispatcher for retrieving key */
         // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
 
+        InputType input_copy = input;
+
         return this->creational_dispatcher_
-            .template resolve<Type, KeyPack>()
-            .and_then([this](meta::Reference<Type> auto entity) {
+            .template resolve<Type, KeyPack>(std::move(input))
+            .and_then([this, &input_copy](meta::Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
-                    .template apply_configs_chain<KeyPack, Type>(entity);
-            })
-            ;
+                    .template apply_configs_chain<KeyPack, Type>(
+                        entity, 
+                        std::move(input_copy)
+                    );
+            });
     }
 
 private:
