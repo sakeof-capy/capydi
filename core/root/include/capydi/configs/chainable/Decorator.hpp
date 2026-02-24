@@ -2,11 +2,13 @@
 #define DECORATOR_HPP_
 
 #include "capydi/configs/creational/Transient.hpp"
+#include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/type_structures/Maybe.hpp>
+#include <capymeta/concepts/WrappedWIth.hpp>
 
 namespace capy::di
 {
@@ -18,6 +20,9 @@ template<
     typename InnerConfig = Transient<Decorator_>
 >
 struct Decorator
+    : public DecoratableChainableConfig<
+        Decorator<Decorator_, Decoratee, RelatedKey_, InnerConfig>
+    >
 {
 public:
     using RelatedEntity = Decoratee;
@@ -29,7 +34,8 @@ public:
 public:
     Resolution<RelatedEntity, Error> auto
         pipe(
-            meta::Reference<RelatedEntity> auto decoratee
+            meta::Reference<RelatedEntity> auto decoratee,
+            const auto& input_tuple
         ) const
     {
         auto dependencies = std::tuple { decoratee };

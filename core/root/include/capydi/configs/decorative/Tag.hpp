@@ -2,6 +2,7 @@
 #define TAG_CONFIG_HPP_
 
 #include "capydi/configs/concepts/CreationalConfig.hpp"
+#include "capydi/configs/concepts/ChainableConfig.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/inputs/TagInput.hpp"
 #include "capydi/configs/inputs/NoInput.hpp"
@@ -9,6 +10,7 @@
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
+#include <capymeta/algorithms/pack/Contains.hpp>
 #include <tuple>
 #include <expected>
 #include <optional>
@@ -81,6 +83,63 @@ private:
     Decoratee decoratee_;
 };
 
+template<ChainableConfig Decoratee>
+class TagChainable
+    : public DecoratableConfig<
+        TagChainable<Decoratee>
+    >
+{
+public:
+    constexpr explicit TagChainable(tag_t tag, Decoratee&& decoratee)
+        : tag_ { tag }
+        , decoratee_ { std::move(decoratee) }
+    {}
+
+public:
+    using RelatedEntity = get_related_entity_t<Decoratee>;
+    using RelatedKeysPack = get_related_keys_pack_t<Decoratee>;
+
+public:
+    static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;
+
+public:
+    template<typename... Inputs>
+    Resolution<RelatedEntity, Error> auto
+        pipe(
+            meta::Reference<RelatedEntity> auto decoratee,
+            const std::tuple<Inputs...>& input_tuple
+        ) const
+    {
+        using InputsPack = meta::Pack<Inputs...>;
+        using ResultType = decltype(this->decoratee_.pipe(decoratee, input_tuple));
+
+        if constexpr (meta::pack_contains_t<InputsPack, TagInput>)
+        {
+            const TagInput& tag_input = std::get<TagInput>(input_tuple);
+
+            if (tag_input.tag.value() != this->tag_)
+            {
+                return ResultType {
+                    decoratee
+                };
+            }
+
+            return this->decoratee_.pipe(decoratee, input_tuple);
+        }
+        else
+        {
+            return ResultType {
+                decoratee
+            };
+        }
+    }
+
+
+private:
+    tag_t tag_;
+    Decoratee decoratee_;
+};
+
 }
 
 struct Tag
@@ -91,6 +150,17 @@ struct Tag
         tag_t tag
     ) {
         return implementation_details_::Tag<Decoratee> {
+            tag,
+            std::forward<Decoratee>(decoratee)
+        };
+    }
+
+    template<ChainableConfig Decoratee>
+    static constexpr implementation_details_::TagChainable<Decoratee> decorate_chainable(
+        Decoratee&& decoratee, 
+        tag_t tag
+    ) {
+        return implementation_details_::TagChainable<Decoratee> {
             tag,
             std::forward<Decoratee>(decoratee)
         };

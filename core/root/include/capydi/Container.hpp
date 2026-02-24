@@ -131,11 +131,16 @@ public:
         /* TODO: implement dispatcher for retrieving key */
         // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
 
+        InputType input_copy = input;
+
         return this->creational_dispatcher_
             .template resolve<Type, KeyPack>(std::move(input))
-            .and_then([this](meta::Reference<Type> auto entity) {
+            .and_then([this, &input_copy](meta::Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
-                    .template apply_configs_chain<KeyPack, Type>(entity);
+                    .template apply_configs_chain<KeyPack, Type>(
+                        entity, 
+                        std::move(input_copy)
+                    );
             });
     }
 

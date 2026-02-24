@@ -9,10 +9,12 @@
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Template.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
+#include <capymeta/concepts/WrappedWIth.hpp>
 #include <boost/mp11.hpp>
 #include <concepts>
 #include <expected>
 #include <variant>
+#include <tuple>
 
 namespace capy::di
 {
@@ -37,7 +39,8 @@ public:
         Error
     > auto
         apply_configs_chain(
-            meta::Reference<RelatedEntity> auto entity
+            meta::Reference<RelatedEntity> auto entity,
+            meta::wrapped_with<std::tuple> auto&& input
         ) const 
     {
         auto maybe_configs_array = this->configs_dispatch_map_
@@ -53,7 +56,7 @@ public:
         {
             auto configs_array_reference = maybe_configs_array.value();
             typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
-            return this->perform_piping<RelatedEntity>(configs_array, entity, 0);
+            return this->perform_piping<RelatedEntity>(configs_array, input, entity, 0);
         }
     }
 
@@ -64,6 +67,7 @@ public:
     > auto
         perform_piping(
             const auto& configs_array,
+            const auto& input,
             meta::Reference<RelatedEntity> auto entity,
             std::size_t current_index
         ) const 
@@ -77,17 +81,18 @@ public:
 
         return 
             std::visit(
-                [&entity](const auto& config_reference) {
+                [&entity, &input](const auto& config_reference) {
                     typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
-                    return config.pipe(entity);
+                    return config.pipe(entity, input);
                 },
                 configs_array[current_index]
             )
-            .and_then([this, &configs_array, current_index](
+            .and_then([this, &configs_array, current_index, &input](
                 meta::Reference<RelatedEntity> auto processed_entity
             ) {
                 return this->perform_piping<RelatedEntity>(
                     configs_array, 
+                    input,
                     processed_entity, 
                     current_index + 1
                 );
