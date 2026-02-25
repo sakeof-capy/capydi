@@ -2,6 +2,7 @@
 
 #include <capydi/Container.hpp>
 #include <capydi/configs/decorative/Interface.hpp>
+#include <capydi/configs/decorative/DependencyTags.hpp>
 #include <capydi/configs/chainable/Decorator.hpp>
 #include <capydi/configs/creational/Singleton.hpp>
 #include <capydi/configs/decorative/Tag.hpp>
@@ -95,6 +96,30 @@ private:
     IValue& decoratee_;
 };
 
+class Plus
+{
+public:
+    Plus(IValue& value1, IValue& value2)
+        : value1_ { value1 }
+        , value2_ { value2 }
+    {}
+
+public:
+    int evaluate()
+    {
+        return value1_.get_value() + value2_.get_value();
+    }
+
+    static Plus create(IValue& value1, IValue& value2)
+    {
+        return Plus { value1, value2 };
+    }
+
+private:
+    IValue& value1_;
+    IValue& value2_;
+};
+
 TEST_CASE("decorator:as_interface") {
     SECTION("single_decorator")
     {
@@ -180,5 +205,41 @@ TEST_CASE("decorator:as_interface") {
 
         REQUIRE(std::string { value1.get_name() } == "value1_name");
         REQUIRE(std::string { value3.get_name() } == "value3_name");
+    }
+
+    SECTION("higher_level:decorators_with_tags")
+    {
+        const DI container {
+            Singleton<Value1>{}
+                .with<Interface>(Unit<IValue>{})
+                .with<Tag>("value1-tag"),
+            Singleton<Value3>{}
+                .with<Interface>(Unit<IValue>{})
+                .with<Tag>("value3-tag"),
+
+            Singleton<Plus>{}
+                .with<DependencyTags>(std::array {
+                    DependencyTagPair { 0, "value1-tag" },
+                    DependencyTagPair { 1, "value3-tag" },
+                }),
+
+            Decorator<MultiplyBy2_Decorator, IValue>{},
+
+            Decorator<MultiplyBy2_Decorator, IValue>{}
+                .with<Tag>("value1-tag"),
+
+            Decorator<MultiplyBy2_Decorator, IValue>{}
+                .with<Tag>("value3-tag"),
+
+            Decorator<MultiplyBy2_Decorator, IValue>{}
+                .with<Tag>("value3-tag"),
+        };
+
+        Resolution<Plus, Error> auto plus_resolution = container.resolve<Plus>();
+
+        REQUIRE(plus_resolution.has_value());
+        Plus& plus = plus_resolution.value();
+
+        REQUIRE(plus.evaluate() == Value1::VALUE * 2 * 2 + Value3::VALUE * 2 * 2 * 2);
     }
 }

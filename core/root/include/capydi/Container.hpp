@@ -134,7 +134,7 @@ public:
         InputType input_copy = input;
 
         return this->creational_dispatcher_
-            .template resolve<Type, KeyPack>(std::move(input))
+            .template resolve<Type, KeyPack>(*this, std::move(input))
             .and_then([this, &input_copy](meta::Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
                     .template apply_configs_chain<KeyPack, Type>(

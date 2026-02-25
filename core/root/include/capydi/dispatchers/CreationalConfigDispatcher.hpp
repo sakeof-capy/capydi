@@ -46,6 +46,7 @@ public:
         typename InputType = std::tuple<>
     >
     constexpr Resolution<Type, Error> auto resolve(
+        const auto& parent_container,
         InputType&& input_tuple = std::tuple{}
     ) const {
         auto maybe_config = this->configs_dispatch_map_.static_find(meta::Unit<KeyPack>{});
@@ -73,11 +74,12 @@ public:
 
             for (auto& config_variant : configs_array)
             {
-                auto resolution = std::visit([this, &overrides](auto& config_reference) {
+                auto resolution = std::visit([this, &overrides, &parent_container](auto& config_reference) {
                     typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
                     using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
                     auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
+                        parent_container,
                         config,
                         DependenciesPack{}
                     );
@@ -115,17 +117,21 @@ private:
 
     template<typename... Dependencies>
     constexpr meta::wrapped_with<std::expected> auto
-        resolve_dependencies_tuple(const auto& config, meta::Pack<Dependencies&...>&&) const
+        resolve_dependencies_tuple(
+            const auto& parent_container,
+            const auto& config, 
+            meta::Pack<Dependencies&...>&&
+        ) const
     {
-        auto dependencies_tuple = [this, &config]<std::size_t... Idx>(std::index_sequence<Idx...>) {
+        auto dependencies_tuple = [this, &config, &parent_container]<std::size_t... Idx>(std::index_sequence<Idx...>) {
             return std::tuple {
-                [this, &config] {
+                [this, &config, &parent_container] {
                     auto dependencies_input = config.template get_dependencies_input<Idx>();
 
                     if (dependencies_input.has_value()) {
-                        return this->resolve<Dependencies>(dependencies_input.value());
+                        return parent_container.template resolve<Dependencies>(dependencies_input.value());
                     } else {
-                        return this->resolve<Dependencies>();
+                        return parent_container.template resolve<Dependencies>();
                     }
                 }()...
             };
