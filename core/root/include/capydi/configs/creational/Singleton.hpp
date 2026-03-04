@@ -37,6 +37,7 @@ public:
     std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys, 
         std::tuple<Dependencies...>& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
@@ -45,6 +46,8 @@ public:
             this->singleton_value_.emplace(
                 std::apply(Type::create, dependencies)
             );
+
+            context.flags.just_created = true;
         }
 
         return meta::RuntimeRef<Type> { this->singleton_value_.value() };
@@ -54,11 +57,12 @@ public:
     std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys, 
         std::tuple<Dependencies...>& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
         return meta::RuntimeRef<const Type> {
-            this->do_resolve(meta::Pack<Type>{}, dependencies, input).value()
+            this->do_resolve(meta::Pack<Type>{}, dependencies, context, input).value()
         };
     }
 

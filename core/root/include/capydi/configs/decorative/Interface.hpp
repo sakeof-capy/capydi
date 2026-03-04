@@ -40,12 +40,14 @@ public:
     auto do_resolve(
         meta::Pack<Interface> keys, 
         auto& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
         return decoratee_.do_resolve(
             meta::Pack<central_type_t<Decoratee>>{}, 
             dependencies, 
+            context,
             input
         )
         .transform([](auto ref) {
@@ -58,12 +60,14 @@ public:
     auto do_resolve(
         meta::Pack<const Interface> keys, 
         auto& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
         return decoratee_.do_resolve(
             meta::Pack<const central_type_t<Decoratee>>{}, 
             dependencies, 
+            context,
             input
         )
         .transform([](auto ref) {

@@ -41,6 +41,8 @@ enum class Error
     TAG_MISMATCH,
 
     NOT_ALL_INPUTS_RETRIEVED,
+
+    OBSERVER_COULD_NOT_RESOLVE_TYPE,
 };
 
 }

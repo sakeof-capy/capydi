@@ -40,7 +40,7 @@ public:
     > auto
         apply_configs_chain(
             meta::Reference<RelatedEntity> auto entity,
-            meta::wrapped_with<std::tuple> auto&& input
+            meta::wrapped_with<ResolutionContext> auto& context
         ) const 
     {
         auto maybe_configs_array = this->configs_dispatch_map_
@@ -56,7 +56,7 @@ public:
         {
             auto configs_array_reference = maybe_configs_array.value();
             typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
-            return this->perform_piping<RelatedEntity>(configs_array, input, entity, 0);
+            return this->perform_piping<RelatedEntity>(configs_array, context, entity, 0);
         }
     }
 
@@ -67,7 +67,7 @@ public:
     > auto
         perform_piping(
             const auto& configs_array,
-            const auto& input,
+            meta::wrapped_with<ResolutionContext> auto& context,
             meta::Reference<RelatedEntity> auto entity,
             std::size_t current_index
         ) const 
@@ -81,18 +81,18 @@ public:
 
         return 
             std::visit(
-                [&entity, &input](const auto& config_reference) {
+                [&entity, &context](const auto& config_reference) {
                     typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
-                    return config.pipe(entity, input);
+                    return config.pipe(entity, context);
                 },
                 configs_array[current_index]
             )
-            .and_then([this, &configs_array, current_index, &input](
+            .and_then([this, &configs_array, current_index, &context](
                 meta::Reference<RelatedEntity> auto processed_entity
             ) {
                 return this->perform_piping<RelatedEntity>(
                     configs_array, 
-                    input,
+                    context,
                     processed_entity, 
                     current_index + 1
                 );

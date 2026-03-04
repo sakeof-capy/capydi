@@ -40,12 +40,15 @@ public:
     std::expected<meta::RuntimeRef<Type>, Error> do_resolve(
         meta::Pack<Type> keys,
         std::tuple<Dependencies...>& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
         this->values_.push_back(std::make_unique<Type>(
             std::apply(Type::create, dependencies)
         ));
+
+        context.flags.just_created = true;
 
         return meta::RuntimeRef<Type> { *this->values_.back() };
     }
@@ -54,6 +57,7 @@ public:
     std::expected<meta::RuntimeRef<const Type>, Error> do_resolve(
         meta::Pack<const Type> keys,
         std::tuple<Dependencies...>& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {

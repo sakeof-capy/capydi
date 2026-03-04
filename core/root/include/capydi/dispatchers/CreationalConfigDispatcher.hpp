@@ -5,6 +5,7 @@
 #include "capydi/configs/inputs/NoInput.hpp"
 #include "capydi/configs/ResolutionOverrides.hpp"
 #include "capydi/Resolution.hpp"
+#include "capydi/ResolutionContext.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
@@ -46,8 +47,7 @@ public:
         typename InputType = std::tuple<>
     >
     constexpr Resolution<Type, Error> auto resolve(
-        const auto& parent_container,
-        InputType&& input_tuple = std::tuple{}
+        meta::wrapped_with<ResolutionContext> auto& context
     ) const {
         auto maybe_config = this->configs_dispatch_map_.static_find(meta::Unit<KeyPack>{});
 
@@ -62,6 +62,7 @@ public:
             Error code = Error::CANNOT_BE_RESOLVED;
             auto configs_array_reference = maybe_config.value();
             typename decltype(configs_array_reference)::ReferenceType configs_array = configs_array_reference;
+            auto input_tuple = context.input;
 
             ResolutionOverrides overrides = std::apply(
                 []<typename... T>(T&&... input_args) {
@@ -74,19 +75,19 @@ public:
 
             for (auto& config_variant : configs_array)
             {
-                auto resolution = std::visit([this, &overrides, &parent_container](auto& config_reference) {
+                auto resolution = std::visit([this, &overrides, &context](auto& config_reference) mutable {
                     typename std::decay_t<decltype(config_reference)>::ReferenceType config = config_reference;
                     using DependenciesPack = dependencies_pack_t<std::remove_reference_t<decltype(config)>>;
 
                     auto maybe_dependencies_tuple = this->resolve_dependencies_tuple(
-                        parent_container,
+                        context,
                         config,
                         DependenciesPack{}
                     );
 
                     return maybe_dependencies_tuple
-                        .and_then([&config, &overrides](auto&& dependencies_tuple) {
-                            return config.do_resolve(KeyPack{}, dependencies_tuple, overrides);
+                        .and_then([&config, &overrides, context](auto&& dependencies_tuple) {
+                            return config.do_resolve(KeyPack{}, dependencies_tuple, context, overrides);
                         });
                 }, config_variant);
 
@@ -118,20 +119,20 @@ private:
     template<typename... Dependencies>
     constexpr meta::wrapped_with<std::expected> auto
         resolve_dependencies_tuple(
-            const auto& parent_container,
+            meta::wrapped_with<ResolutionContext> auto& context,
             const auto& config, 
             meta::Pack<Dependencies&...>&&
         ) const
     {
-        auto dependencies_tuple = [this, &config, &parent_container]<std::size_t... Idx>(std::index_sequence<Idx...>) {
+        auto dependencies_tuple = [this, &config, &context]<std::size_t... Idx>(std::index_sequence<Idx...>) {
             return std::tuple {
-                [this, &config, &parent_container] {
+                [this, &config, &context] {
                     auto dependencies_input = config.template get_dependencies_input<Idx>();
 
                     if (dependencies_input.has_value()) {
-                        return parent_container.template resolve<Dependencies>(dependencies_input.value());
+                        return context.container.template resolve<Dependencies>(dependencies_input.value());
                     } else {
-                        return parent_container.template resolve<Dependencies>();
+                        return context.container.template resolve<Dependencies>();
                     }
                 }()...
             };

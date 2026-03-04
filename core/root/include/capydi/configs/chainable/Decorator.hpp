@@ -35,7 +35,7 @@ public:
     Resolution<RelatedEntity, Error> auto
         pipe(
             meta::Reference<RelatedEntity> auto decoratee,
-            const auto& input_tuple
+            meta::wrapped_with<ResolutionContext> auto const& context
         ) const
     {
         auto dependencies = std::tuple { decoratee };

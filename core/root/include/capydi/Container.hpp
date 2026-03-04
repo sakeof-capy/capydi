@@ -51,6 +51,7 @@
 #include "dispatchers/ChainableConfigDispatcher.hpp"
 #include "configs/ConfigClassifier.hpp"
 #include "configs/inputs/NoInput.hpp"
+#include "ResolutionContext.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/algorithms/pack/Filter.hpp>
@@ -131,15 +132,19 @@ public:
         /* TODO: implement dispatcher for retrieving key */
         // using /* meta::Pack<?> */ KeyPack = meta::Pack<Type>;
 
-        InputType input_copy = input;
+        ResolutionContext context {
+            .input = std::move(input),
+            .container = *this,
+            .flags = ResolutionFlags{},
+        };
 
         return this->creational_dispatcher_
-            .template resolve<Type, KeyPack>(*this, std::move(input))
-            .and_then([this, &input_copy](meta::Reference<Type> auto entity) {
+            .template resolve<Type, KeyPack>(context)
+            .and_then([this, &context](meta::Reference<Type> auto entity) {
                 return this->chainable_dispatcher_
                     .template apply_configs_chain<KeyPack, Type>(
                         entity, 
-                        std::move(input_copy)
+                        context
                     );
             });
     }
