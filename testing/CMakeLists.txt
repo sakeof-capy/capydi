@@ -4,7 +4,7 @@ file(GLOB_RECURSE SOURCES bin/*.cpp src/*.cpp)
 file(GLOB_RECURSE HEADERS include/*.hpp)
 
 add_executable(${LIBRARY_NAME} ${HEADERS} ${SOURCES})
-# add_executable(${LIBRARY_NAME} ${HEADERS} src/configs/chainable/DecoratorInterface.cpp)
+# add_executable(${LIBRARY_NAME} ${HEADERS} src/configs/chainable/Factory.cpp)
 
 target_link_libraries(${LIBRARY_NAME} PRIVATE 
     Catch2::Catch2WithMain 

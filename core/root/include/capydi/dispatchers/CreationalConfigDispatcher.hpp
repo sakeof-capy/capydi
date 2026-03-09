@@ -86,7 +86,7 @@ public:
                     );
 
                     return maybe_dependencies_tuple
-                        .and_then([&config, &overrides, context](auto&& dependencies_tuple) mutable {
+                        .and_then([&config, &overrides, &context](auto&& dependencies_tuple) mutable {
                             return config.do_resolve(KeyPack{}, dependencies_tuple, context, overrides);
                         });
                 }, config_variant);

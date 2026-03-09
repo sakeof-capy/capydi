@@ -74,14 +74,6 @@ private:
     std::unordered_map<int, DynamicResolver<IValue>> registry_;
 };
 
-template<typename ActionType, std::size_t TAG_OVERRIDES_COUNT>
-struct ActionConfig
-{
-    ActionType action;
-    std::array<DependencyTagPair, TAG_OVERRIDES_COUNT> args_tags;
-};
-
-
 TEST_CASE("factories") 
 {
     const DI container {
@@ -97,11 +89,32 @@ TEST_CASE("factories")
 
         OnObjectCreated{
             Unit<ValueFactory>{}, 
-            [](ValueFactory& factory, DynamicResolver<IValue>&& value_resolver) {
+            [](ValueFactory& factory, DynamicResolver<IValue> value_resolver) {
                 factory.register_value(123, std::move(value_resolver));
+            },
+            std::array {
+                DependencyTagPair { 0, "factory-tag" }
             }
         }
         .with<Tag>("factory-tag")
     };
 
+
+    Resolution<ValueFactory, Error> auto 
+        factory_resolution = container.resolve<ValueFactory>(std::tuple { TagInput {
+            "factory-tag"
+        }});
+    
+    REQUIRE(factory_resolution.has_value());
+
+    ValueFactory& factory = factory_resolution.value();
+
+    Resolution<IValue, FactoryError> auto 
+        value_resolution = factory.resolve(123);
+
+    REQUIRE(value_resolution.has_value());
+
+    IValue& value = value_resolution.value();
+
+    REQUIRE(value.get_value() == Value1::VALUE);
 }

@@ -18,6 +18,15 @@ struct function_traits<ReturnValue_(Params_...) noexcept(IsNoexcept)>
     static constexpr bool IS_NOEXCEPT = IsNoexcept;
 };
 
+template<typename Class, typename ReturnValue_, bool IsNoexcept, typename... Params_>
+struct function_traits<ReturnValue_(Class::*)(Params_...) const noexcept(IsNoexcept)>
+{
+    using ReturnValue = ReturnValue_;
+    using Params = Pack<Params_...>;
+
+    static constexpr bool IS_NOEXCEPT = IsNoexcept;
+};
+
 template<typename Function>
 using return_value_t = typename function_traits<Function>::ReturnValue;
 
