@@ -86,13 +86,21 @@ TEST_CASE("factories:basic_registration")
 
         OnObjectCreated{
             Unit<ValueFactory>{}, 
-            [](ValueFactory& factory, DynamicResolver<IValue> value_resolver) {
-                factory.register_value(123, std::move(value_resolver));
+            DiAction {
+                .action = [](
+                    ValueFactory& factory, 
+                    DynamicResolver<IValue> value_resolver
+                ) {
+                    factory.register_value(
+                        123, 
+                        std::move(value_resolver)
+                    );
+                },
+                .dependency_tags = std::array {
+                    DependencyTagPair { 0, "factory-tag" },
+                    DependencyTagPair { 1, "value1-tag" },
+                },
             },
-            std::array {
-                DependencyTagPair { 0, "factory-tag" },
-                DependencyTagPair { 1, "value1-tag" },
-            }
         }.with<Tag>("factory-tag"),
     };
 
@@ -139,39 +147,63 @@ TEST_CASE("factories:several_factories")
             .with<Tag>("value3-tag"),
 
         /* 1st Factory registration */
-        OnObjectCreated{
+        OnObjectCreated {
             Unit<ValueFactory>{}, 
-            [](ValueFactory& factory, DynamicResolver<IValue> value_resolver) {
-                factory.register_value(FACTORY1_VALUE1_KEY, std::move(value_resolver));
+            DiAction {
+                .action = [](
+                    ValueFactory& factory, 
+                    DynamicResolver<IValue> value_resolver
+                ) {
+                    factory.register_value(
+                        FACTORY1_VALUE1_KEY, 
+                        std::move(value_resolver)
+                    );
+                },
+                .dependency_tags = std::array {
+                    DependencyTagPair { 0, "factory1-tag" },
+                    DependencyTagPair { 1, "value1-tag" },
+                },
             },
-            std::array {
-                DependencyTagPair { 0, "factory1-tag" },
-                DependencyTagPair { 1, "value1-tag" },
-            }
         }.with<Tag>("factory1-tag"),
 
         /* 1st Factory registration */
         OnObjectCreated{
             Unit<ValueFactory>{}, 
-            [](ValueFactory& factory, DynamicResolver<IValue> value_resolver) {
-                factory.register_value(FACTORY1_VALUE3_KEY, std::move(value_resolver));
+            DiAction {
+                .action = [](
+                    ValueFactory& factory, 
+                    DynamicResolver<IValue> value_resolver
+                ) {
+                    factory.register_value(
+                        FACTORY1_VALUE3_KEY, 
+                        std::move(value_resolver)
+                    );
+                },
+                .dependency_tags = std::array {
+                    DependencyTagPair { 0, "factory1-tag" },
+                    DependencyTagPair { 1, "value3-tag" },
+                },
             },
-            std::array {
-                DependencyTagPair { 0, "factory1-tag" },
-                DependencyTagPair { 1, "value3-tag" },
-            }
         }.with<Tag>("factory1-tag"),
 
         /* 2nd Factory registration */
         OnObjectCreated{
-            Unit<ValueFactory>{}, 
-            [](ValueFactory& factory, DynamicResolver<IValue> value_resolver) {
-                factory.register_value(FACTORY2_VALUE1_KEY, std::move(value_resolver));
+            Unit<ValueFactory>{},
+            DiAction {
+                .action = [](
+                    ValueFactory& factory, 
+                    DynamicResolver<IValue> value_resolver
+                ) {
+                    factory.register_value(
+                        FACTORY2_VALUE1_KEY, 
+                        std::move(value_resolver)
+                    );
+                },
+                .dependency_tags = std::array {
+                    DependencyTagPair { 0, "factory2-tag" },
+                    DependencyTagPair { 1, "value1-tag" },
+                },
             },
-            std::array {
-                DependencyTagPair { 0, "factory2-tag" },
-                DependencyTagPair { 1, "value1-tag" },
-            }
         }.with<Tag>("factory2-tag"),
     };
 

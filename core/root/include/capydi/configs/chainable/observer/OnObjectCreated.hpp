@@ -2,6 +2,7 @@
 #define CAPYDI_ON_OBJECT_CREATED_HPP_
 
 #include "ActionArgMatcher.hpp"
+#include "DiAction.hpp"
 
 #include "capydi/Resolution.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
@@ -11,7 +12,6 @@
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/concepts/WrappedWIth.hpp>
-#include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
 #include <optional>
 
 namespace capy::di
@@ -37,11 +37,9 @@ public:
 public:
     constexpr explicit OnObjectCreated(
         meta::Unit<RelatedEntity_>,
-        Action&& action,
-        std::array<DependencyTagPair, SIZE> dependency_tags
+        DiAction<Action, SIZE>&& action
     )
-        : action_ { std::move(action) } 
-        , dependency_tags_ { dependency_tags }
+        : di_action_ { std::move(action) } 
     {}
 
 public:
@@ -58,70 +56,25 @@ public:
             };
         }
 
-        using ActionDependenciesPack 
-            = meta::args_pack_t<decltype(&Action::operator())>;
-
-        auto maybe_args = [this, &context]<typename... ActionDependencies>(
-            meta::Pack<ActionDependencies...>
-        ) {
-            auto args_preparations = [this, &context]<std::size_t... Idx>(std::index_sequence<Idx...>) {
-                return std::tuple {
-                    ActionArgMatcher<ActionDependencies>::prepare_arg(
-                        context, 
-                        [this]() -> std::optional<tag_t> {
-                            auto it = std::ranges::find_if(
-                                this->dependency_tags_, 
-                                [](const auto& tag_pair){
-                                    return tag_pair.first == Idx;
-                                }
-                            );
-
-                            if (it == std::ranges::end(this->dependency_tags_)) [[unlikely]]
-                            {
-                                return std::nullopt;
-                            }
-
-                            return it->second;
-                        }()
-                    )...
-                };
-            }(std::index_sequence_for<ActionDependencies...>{});
-
-            return std::apply([](auto&&... preparations) {
-                using TupleResult = std::tuple<ActionDependencies...>;
-
-                if ((preparations.has_value() && ...))
+        return execute_di_action(this->di_action_, context)
+            .transform([&] {
+                return decoratee;
+            })
+            .transform_error([](DiActionError action_error) {
+                switch (action_error)
                 {
-                    return std::expected<TupleResult, Error> {
-                        std::tuple { std::move(preparations.value())... }
-                    };
+                    case DiActionError::DI_ACTION_UNABLE_TO_RESOLVE_ARGS:
+                        return Error::OBSERVER_COULD_NOT_RESOLVE_TYPE;
+                    case DiActionError::DI_ACTION_EXECUTION_ERROR:
+                        return Error::OBSERVER_ACTION_EXECUTION_FAILURE;
+                    default:
+                        std::unreachable();
                 }
-
-                return std::expected<TupleResult, Error> {
-                    std::unexpected { Error::OBSERVER_COULD_NOT_RESOLVE_TYPE }
-                };
-            }, std::move(args_preparations));
-        }(ActionDependenciesPack{});
-
-        if (!maybe_args.has_value()) [[unlikely]]
-        {
-            return std::expected<decltype(decoratee), Error> {
-                std::unexpected { maybe_args.error() }
-            };
-        }
-
-        auto& args = maybe_args.value();
-
-        std::apply(this->action_, args);
-
-        return std::expected<decltype(decoratee), Error> {
-            decoratee
-        };
+            });
     }
 
 private:
-    Action action_;
-    std::array<DependencyTagPair, SIZE> dependency_tags_;
+    DiAction<Action, SIZE> di_action_;
 };
 
 }
