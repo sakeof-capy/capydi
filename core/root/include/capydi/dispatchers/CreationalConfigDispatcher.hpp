@@ -164,8 +164,10 @@ private:
     template<typename UniqueType, typename... NonUniqueConfigs>
     static constexpr auto collect(NonUniqueConfigs&... args)
     {
+        using namespace boost::mp11;
+
         auto configs_tuple = std::tuple_cat(
-            ([&]() {
+            ([&] {
                 if constexpr (meta::pack_contains_t<
                     resolution_keys_pack_t<NonUniqueConfigs>,
                     UniqueType
@@ -182,7 +184,8 @@ private:
 
         return std::apply(
             []<typename... T>(T&&... configs) {
-                using VariantType = std::variant<std::decay_t<T>...>;
+                using UniqueTs = mp_unique<mp_list<T...>>;
+                using VariantType = meta::rebind_t<UniqueTs, mp_list, std::variant>;
                 return std::array<VariantType, sizeof...(configs)> { 
                     VariantType { std::forward<T>(configs) }...
                 };

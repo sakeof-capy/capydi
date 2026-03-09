@@ -27,8 +27,23 @@ public:
     explicit DynamicResolver(
         meta::wrapped_with<ResolutionContext> auto const& context
     )
-        : resolver_ { [context] {
-            return context.container.template resolve<Type>();
+        : resolver_ { [&context] {
+            return context
+                .container
+                .template resolve<Type>();
+        }}
+    {}
+
+    DynamicResolver(
+        meta::wrapped_with<ResolutionContext> auto const& context,
+        tag_t tag
+    )
+        : resolver_ { [context, tag] {
+            return context
+                .container
+                .template resolve<Type>(std::tuple { TagInput {
+                    tag
+                }});
         }}
     {}
 
@@ -55,14 +70,20 @@ struct ActionArgMatcher<Type&>
     ) {
         if (tag.has_value())
         {
-            auto resolution = context.container.template resolve<Type>(std::tuple { TagInput {
-                tag.value()
-            }});
+            auto resolution = context
+                .container
+                .template resolve<Type>(std::tuple { TagInput {
+                    tag.value()
+                }});
+
             return resolution;
         }
         else
         {
-            auto resolution = context.container.template resolve<Type>();
+            auto resolution = context
+                .container
+                .template resolve<Type>();
+
             return resolution;
         }
     }
@@ -75,7 +96,20 @@ struct ActionArgMatcher<DynamicResolver<Type>>
         meta::wrapped_with<ResolutionContext> auto& context,
         std::optional<tag_t> tag
     ) {
-        return DynamicResolver<Type> { context };
+
+        if (tag.has_value())
+        {
+            return DynamicResolver<Type> { 
+                context,
+                tag.value()
+            };
+        }
+        else
+        {
+            return DynamicResolver<Type> { 
+                context,
+            }; 
+        }
     }
 };
 

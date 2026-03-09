@@ -125,7 +125,11 @@ public:
     {}
 
 public: 
-    template<typename Type, typename KeyPack = meta::Pack<Type>, typename InputType = std::tuple<>>
+    template<
+        typename Type, 
+        typename KeyPack = meta::Pack<Type>, 
+        typename InputType = std::tuple<>
+    >
     [[nodiscard]] constexpr Resolution<Type, Error> auto 
         resolve(InputType&& input = std::tuple{}) const
     {
