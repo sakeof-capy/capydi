@@ -1,117 +1,21 @@
 #ifndef CAPYDI_ON_OBJECT_CREATED_HPP_
 #define CAPYDI_ON_OBJECT_CREATED_HPP_
 
+#include "ActionArgMatcher.hpp"
+
 #include "capydi/Resolution.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/configs/decorative/DependencyTags.hpp"
 #include "capydi/ResolutionContext.hpp"
 #include "capydi/Error.hpp"
-#include "capydi/configs/inputs/TagInput.hpp"
 
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/concepts/WrappedWIth.hpp>
 #include <capymeta/algorithms/pack/legacy/FunctionTraits.hpp>
-#include <functional>
 #include <optional>
 
 namespace capy::di
 {
-
-template<typename Type>
-class DynamicResolver
-{
-public:
-    using ReturnType = std::expected<meta::RuntimeRef<Type>, Error>;
-
-public:
-    explicit DynamicResolver(
-        meta::wrapped_with<ResolutionContext> auto const& context
-    )
-        : resolver_ { [&context] {
-            return context
-                .container
-                .template resolve<Type>();
-        }}
-    {}
-
-    DynamicResolver(
-        meta::wrapped_with<ResolutionContext> auto const& context,
-        tag_t tag
-    )
-        : resolver_ { [context, tag] {
-            return context
-                .container
-                .template resolve<Type>(std::tuple { TagInput {
-                    tag
-                }});
-        }}
-    {}
-
-public:
-    ReturnType resolve() const
-    {
-        return this->resolver_();
-    }
-
-private:
-    std::function<ReturnType()> resolver_;
-};
-
-
-template<typename ActionArg>
-struct ActionArgMatcher;
-
-template<typename Type>
-struct ActionArgMatcher<Type&>
-{
-    static std::expected<meta::RuntimeRef<Type>, Error> prepare_arg(
-        meta::wrapped_with<ResolutionContext> auto& context,
-        std::optional<tag_t> tag
-    ) {
-        if (tag.has_value())
-        {
-            auto resolution = context
-                .container
-                .template resolve<Type>(std::tuple { TagInput {
-                    tag.value()
-                }});
-
-            return resolution;
-        }
-        else
-        {
-            auto resolution = context
-                .container
-                .template resolve<Type>();
-
-            return resolution;
-        }
-    }
-};
-
-template<typename Type>
-struct ActionArgMatcher<DynamicResolver<Type>>
-{
-    static std::expected<DynamicResolver<Type>, Error> prepare_arg(
-        meta::wrapped_with<ResolutionContext> auto& context,
-        std::optional<tag_t> tag
-    ) {
-
-        if (tag.has_value())
-        {
-            return DynamicResolver<Type> { 
-                context,
-                tag.value()
-            };
-        }
-        else
-        {
-            return DynamicResolver<Type> { 
-                context,
-            }; 
-        }
-    }
-};
 
 template<
     typename RelatedEntity_,

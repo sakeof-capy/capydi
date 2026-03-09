@@ -3,14 +3,13 @@
 
 #include <capydi/Container.hpp>
 #include <capydi/configs/creational/Singleton.hpp>
-#include <capydi/configs/chainable/OnObjectCreated.hpp>
+#include <capydi/configs/chainable/Observer.hpp>
 #include <capydi/configs/decorative/Tag.hpp>
 #include <capydi/configs/inputs/TagInput.hpp>
 #include <capydi/configs/decorative/Interface.hpp>
 #include <capydi/configs/decorative/DependencyTags.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <unordered_map>
-#include <iostream>
 
 using namespace capy::di;
 using namespace capy::di::operations;
