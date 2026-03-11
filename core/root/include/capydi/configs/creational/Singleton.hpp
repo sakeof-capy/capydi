@@ -74,4 +74,8 @@ private:
 
 }
 
+#ifndef GENERATE_UNIQUE_NAME
+#   define GENERATE_UNIQUE_NAME SOME_UNIQUE_NAME
+#endif
+
 #endif // !SINGLETON_HPP
