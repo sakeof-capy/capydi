@@ -19,9 +19,9 @@ add_custom_target(
 )
 
 add_subdirectory(core)
-add_subdirectory(examples)
 
 if (PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(examples)
     add_subdirectory(testing)
     add_subdirectory(benchmarks)
 endif()
