@@ -1,10 +1,12 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.21)
 project(capydi)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_subdirectory(dependencies/Catch2)
+if (PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(dependencies/Catch2)
+endif()
 
 find_package(Doxygen REQUIRED)
 
@@ -18,5 +20,8 @@ add_custom_target(
 
 add_subdirectory(core)
 add_subdirectory(examples)
-add_subdirectory(testing)
-add_subdirectory(benchmarks)
+
+if (PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(testing)
+    add_subdirectory(benchmarks)
+endif()
