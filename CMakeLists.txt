@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if (PROJECT_IS_TOP_LEVEL)
-    add_subdirectory(dependencies/Catch2)
+    include(cmake/Dependencies.cmake)
 endif()
 
 find_package(Doxygen REQUIRED)
