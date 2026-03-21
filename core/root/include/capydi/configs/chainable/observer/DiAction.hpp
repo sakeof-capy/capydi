@@ -19,6 +19,14 @@ template<
 >
 struct DiAction
 {
+public:
+    using ReturnType 
+        = meta::return_value_t<decltype(&ActionFunctor::operator())>;
+
+    using ArgsPack 
+        = meta::args_pack_t<decltype(&ActionFunctor::operator())>;
+
+public:
     ActionFunctor action;
 
     std::array<
@@ -27,22 +35,53 @@ struct DiAction
     > dependency_tags;
 };
 
+template<typename T>
+concept MaybeLike = requires (T maybe) {
+    { maybe.has_value() } -> std::convertible_to<bool>;
+    { maybe.value() };
+    typename T::value_type;
+};
+
+template<typename DiAction_>
+using di_action_return_t = typename DiAction_::ReturnType;
+
+template<typename DiAction_>
+using di_action_args_pack_t = typename DiAction_::ArgsPack;
+
 enum class DiActionError
 {
     DI_ACTION_UNABLE_TO_RESOLVE_ARGS,
     DI_ACTION_EXECUTION_ERROR,
 };
 
-inline std::expected<void, DiActionError> execute_di_action(
-    /*meta::wrapped_with<DiAction>*/ auto const& di_action,
-    /*meta::wrapped_with<ResolutionContext>*/ auto& context
-)
-{
-    using Action = decltype(di_action.action);
-    using ActionReturnType 
-        = meta::return_value_t<decltype(&Action::operator())>;
-    using ActionDependenciesPack 
-        = meta::args_pack_t<decltype(&Action::operator())>;
+template<typename DiAction_>
+inline auto execute_di_action(
+    DiAction_ const& di_action,
+    auto& context
+) {
+    using ActionReturnType = di_action_return_t<DiAction_>;
+    using ActionDependenciesPack = di_action_args_pack_t<DiAction_>;
+
+    using ResultType = meta::unit_inner_type_t<decltype([] {
+        if constexpr (MaybeLike<ActionReturnType>)
+        {
+            return meta::Unit<
+                std::expected<
+                    typename ActionReturnType::value_type,
+                    DiActionError
+                >
+            >{};
+        }
+        else
+        {
+            return meta::Unit<
+                std::expected<
+                    ActionReturnType,
+                    DiActionError
+                >
+            >{};
+        }
+    }())>;
 
     auto maybe_args = [di_action, &context]<typename... ActionDependencies>(
         meta::Pack<ActionDependencies...>
@@ -88,31 +127,38 @@ inline std::expected<void, DiActionError> execute_di_action(
 
     if (!maybe_args.has_value()) [[unlikely]]
     {
-        return std::unexpected { 
+        return ResultType { std::unexpected { 
             DiActionError::DI_ACTION_UNABLE_TO_RESOLVE_ARGS
-        };
+        }};
     }
 
     auto& args = maybe_args.value();
 
-    if constexpr (std::is_void_v<ActionReturnType>)
-    {
-        std::apply(di_action.action, args);
-        return {};
-    }
-    else 
+    if constexpr (MaybeLike<ActionReturnType>)
     {
         ActionReturnType action_result 
             = std::apply(di_action.action, args);
-        
-        if (!action_result) [[unlikely]]
+
+        if (!action_result.has_value()) [[unlikely]]
         {
-            return std::unexpected {
+            return ResultType { std::unexpected {
                 DiActionError::DI_ACTION_EXECUTION_ERROR
-            };
+            }};
         }
 
-        return {};
+        return ResultType { action_result.value() };
+    }
+    else if constexpr (std::is_void_v<ActionReturnType>)
+    {
+        std::apply(di_action.action, args);
+        return ResultType {};
+    }
+    else
+    {   
+        ActionReturnType action_result 
+            = std::apply(di_action.action, args);
+
+        return ResultType { action_result };
     }
 }
 
