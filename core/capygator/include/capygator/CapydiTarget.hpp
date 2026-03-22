@@ -48,6 +48,7 @@ public:
             "#undef STORE_GENERATE_UNIQUE_NAME\n";
 
         const FileSystem::FileContentType config_identifiers_string = config_identifiers
+            | std::views::transform([](const auto& s) { return "std::move(" + s + ")"; })
             | std::views::join_with(FileSystem::FileContentType(",\n        "))
             | std::ranges::to<FileSystem::FileContentType>();
 
