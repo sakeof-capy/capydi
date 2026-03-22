@@ -42,7 +42,12 @@ namespace capy::meta
  * @endcode
  */
 template<typename UnitType>
-struct Unit {};
+struct Unit {
+    using InnerType = UnitType;
+};
+
+template<typename Unit_>
+using unit_inner_type_t = typename Unit_::InnerType;
 
 /**
  * @class Pack

@@ -35,13 +35,13 @@ public:
     Resolution<RelatedEntity, Error> auto
         pipe(
             meta::Reference<RelatedEntity> auto decoratee,
-            const auto& input_tuple
+            meta::wrapped_with<ResolutionContext> auto& context
         ) const
     {
         auto dependencies = std::tuple { decoratee };
 
         return inner_config_
-            .do_resolve(meta::Pack<Decorator_>{}, dependencies, meta::None{})
+            .do_resolve(meta::Pack<Decorator_>{}, dependencies, context, std::tuple{})
             .transform([](auto decorator_ref) {
                 return meta::RuntimeRef (static_cast<RelatedEntity&>(decorator_ref));
             });

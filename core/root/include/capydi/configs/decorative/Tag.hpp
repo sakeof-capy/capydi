@@ -47,6 +47,7 @@ public:
     std::expected<meta::RuntimeRef<Key>, Error> do_resolve(
         meta::Pack<Key>&& keys, 
         auto& dependencies,
+        meta::wrapped_with<ResolutionContext> auto& context,
         const auto& input
     ) const
     {
@@ -67,6 +68,7 @@ public:
         return decoratee_.do_resolve(
             keys, 
             dependencies, 
+            context,
             input
         );
     }
@@ -103,19 +105,22 @@ public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;
 
 public:
-    template<typename... Inputs>
     Resolution<RelatedEntity, Error> auto
         pipe(
             meta::Reference<RelatedEntity> auto decoratee,
-            const std::tuple<Inputs...>& input_tuple
+            meta::wrapped_with<ResolutionContext> auto& context
         ) const
     {
-        using InputsPack = meta::Pack<Inputs...>;
-        using ResultType = decltype(this->decoratee_.pipe(decoratee, input_tuple));
+        using InputsPack = meta::rebind_t<
+            decltype(context.input),
+            std::tuple, 
+            meta::Pack 
+        >;
+        using ResultType = decltype(this->decoratee_.pipe(decoratee, context));
 
         if constexpr (meta::pack_contains_t<InputsPack, TagInput>)
         {
-            const TagInput& tag_input = std::get<TagInput>(input_tuple);
+            const TagInput& tag_input = std::get<TagInput>(context.input);
 
             if (tag_input.tag.value() != this->tag_)
             {
@@ -124,7 +129,7 @@ public:
                 };
             }
 
-            return this->decoratee_.pipe(decoratee, input_tuple);
+            return this->decoratee_.pipe(decoratee, context);
         }
         else
         {
