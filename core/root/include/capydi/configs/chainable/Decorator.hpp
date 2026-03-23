@@ -5,6 +5,7 @@
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
 #include "capydi/Error.hpp"
 
+#include <capymeta/primitives/referencing/RuntimeRef.hpp>
 #include <capymeta/primitives/referencing/Reference.hpp>
 #include <capymeta/primitives/Pack.hpp>
 #include <capymeta/algorithms/pack/Head.hpp>
@@ -50,7 +51,7 @@ public:
             >
         ) 
         {
-            return std::expected<RelatedEntity, Error> {
+            return std::expected<meta::RuntimeRef<RelatedEntity>, Error> {
                 std::unexpected { Error::INVALID_DECORATOR_CONFIG }
             };
         }
@@ -59,17 +60,56 @@ public:
             using NonDecoratedDependenciesPack 
                 = meta::pack_pop_head_t<DependenciesPack>;
 
-            auto dependencies = [&context, decoratee]<typename... NonDecoratedDependencies>(
+            auto decorated_dependencies = std::tuple { decoratee };
+
+            auto maybe_non_decorated_dependencies_tuple = [&context]<
+                typename... NonDecoratedDependencies
+            >(
                 meta::Pack<NonDecoratedDependencies...>
             ) {
                 return std::tuple { 
-                    decoratee,
                     context
                         .container
                         .template resolve<NonDecoratedDependencies>()...
                 };
             }(NonDecoratedDependenciesPack{});
+
+            auto maybe_non_decorated_dependencies = std::apply(
+                [](auto&&... maybe_dependencies) {
+                    using DependenciesTuple = std::tuple<
+                        typename std::remove_reference_t<decltype(maybe_dependencies)>::value_type...
+                    >;
+
+                    if ((maybe_dependencies.has_value() && ...))
+                    {
+                        return std::expected<DependenciesTuple, Error> {
+                            std::tuple { std::move(maybe_dependencies.value())... }
+                        };
+                    }
+                    else 
+                    {
+                        return std::expected<DependenciesTuple, Error> {
+                            std::unexpected { Error::INVALID_DECORATOR_DEPENDENCIES }
+                        };
+                    }
+                },
+                std::move(maybe_non_decorated_dependencies_tuple)
+            );
+
+            if (!maybe_non_decorated_dependencies.has_value()) [[unlikely]]
+            {
+                return std::expected<meta::RuntimeRef<RelatedEntity>, Error> {
+                    std::unexpected { maybe_non_decorated_dependencies.error() }
+                };
+            }
+
+            auto non_decorated_dependencies 
+                = std::move(maybe_non_decorated_dependencies).value();
             
+            auto dependencies = std::tuple_cat(
+                std::move(decorated_dependencies),
+                std::move(non_decorated_dependencies)
+            );
 
             return inner_config_
                 .do_resolve(meta::Pack<Decorator_>{}, dependencies, context, std::tuple{})
