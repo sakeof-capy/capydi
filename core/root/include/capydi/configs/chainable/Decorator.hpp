@@ -97,12 +97,12 @@ public:
                             {
                                 return context
                                     .container
-                                    .template resolve<NonDecoratedDependencies>();
+                                    .template resolve<std::decay_t<NonDecoratedDependencies>>();
                             }
 
                             return context
                                 .container
-                                .template resolve<NonDecoratedDependencies>(std::tuple { TagInput {
+                                .template resolve<std::decay_t<NonDecoratedDependencies>>(std::tuple { TagInput {
                                     it->second
                                 }});
                         }()...
