@@ -21,24 +21,31 @@ namespace capy::di
 template<
     typename Decorator_,
     typename Decoratee, 
-    typename RelatedKey_ = meta::Pack<Decoratee>, 
-    typename InnerConfig = Transient<Decorator_>,
     std::size_t SIZE = 0
 >
 struct Decorator
     : public DecoratableChainableConfig<
-        Decorator<Decorator_, Decoratee, RelatedKey_, InnerConfig>
+        Decorator<Decorator_, Decoratee, SIZE>
     >
 {
 public:
     using RelatedEntity = Decoratee;
-    using RelatedKeysPack = meta::Pack<RelatedKey_>;
+    using RelatedKeysPack = meta::Pack<meta::Pack<Decoratee>>;
 
 public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;
 
 public:
     explicit Decorator(std::array<DependencyTagPair, SIZE> dependency_tags = {})
+        : inner_config_{}
+        , dependency_tags_ { dependency_tags }
+    {}
+
+    Decorator(
+        meta::Unit<Decorator_>,
+        meta::Unit<Decoratee>,
+        std::array<DependencyTagPair, SIZE> dependency_tags = {}
+    )
         : inner_config_{}
         , dependency_tags_ { dependency_tags }
     {}
@@ -149,7 +156,7 @@ public:
     }
 
 private:
-    InnerConfig inner_config_;
+    Transient<Decorator_> inner_config_;
     std::array<DependencyTagPair, SIZE> dependency_tags_;
 };
 
