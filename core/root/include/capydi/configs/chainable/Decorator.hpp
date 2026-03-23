@@ -89,7 +89,7 @@ public:
                             auto it = std::ranges::find_if(
                                 this->dependency_tags_, 
                                 [](const auto& tag_pair){
-                                    return tag_pair.first == Idx;
+                                    return tag_pair.first == Idx + 1;
                                 }
                             );
 
