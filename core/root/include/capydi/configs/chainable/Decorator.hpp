@@ -3,6 +3,8 @@
 
 #include "capydi/configs/creational/Transient.hpp"
 #include "capydi/configs/decorative/DecoratableConfig.hpp"
+#include "capydi/configs/decorative/DependencyTags.hpp"
+#include "capydi/configs/inputs/TagInput.hpp"
 #include "capydi/Error.hpp"
 
 #include <capymeta/primitives/referencing/RuntimeRef.hpp>
@@ -20,7 +22,8 @@ template<
     typename Decorator_,
     typename Decoratee, 
     typename RelatedKey_ = meta::Pack<Decoratee>, 
-    typename InnerConfig = Transient<Decorator_>
+    typename InnerConfig = Transient<Decorator_>,
+    std::size_t SIZE = 0
 >
 struct Decorator
     : public DecoratableChainableConfig<
@@ -33,6 +36,12 @@ public:
 
 public:
     static constexpr ConfigType CONFIG_TYPE = ConfigType::CHAINABLE;
+
+public:
+    explicit Decorator(std::array<DependencyTagPair, SIZE> dependency_tags = {})
+        : inner_config_{}
+        , dependency_tags_ { dependency_tags }
+    {}
 
 public:
     Resolution<RelatedEntity, Error> auto
@@ -62,16 +71,36 @@ public:
 
             auto decorated_dependencies = std::tuple { decoratee };
 
-            auto maybe_non_decorated_dependencies_tuple = [&context]<
+            auto maybe_non_decorated_dependencies_tuple = [this, &context]<
                 typename... NonDecoratedDependencies
             >(
                 meta::Pack<NonDecoratedDependencies...>
             ) {
-                return std::tuple { 
-                    context
-                        .container
-                        .template resolve<NonDecoratedDependencies>()...
-                };
+                return [this, &context]<std::size_t... Idx>(std::index_sequence<Idx...>) {
+                    return std::tuple { 
+                        [this, &context] {
+                            auto it = std::ranges::find_if(
+                                this->dependency_tags, 
+                                [](const auto& tag_pair){
+                                    return tag_pair.first == Idx;
+                                }
+                            );
+
+                            if (it == std::ranges::end(this->dependency_tags)) [[unlikely]]
+                            {
+                                return context
+                                    .container
+                                    .template resolve<NonDecoratedDependencies>();
+                            }
+
+                            return context
+                                .container
+                                .template resolve<NonDecoratedDependencies>(std::tuple { TagInput {
+                                    it->second
+                                }});
+                        }()...
+                    };
+                }(std::index_sequence_for<NonDecoratedDependencies...>{});
             }(NonDecoratedDependenciesPack{});
 
             auto maybe_non_decorated_dependencies = std::apply(
@@ -121,6 +150,7 @@ public:
 
 private:
     InnerConfig inner_config_;
+    std::array<DependencyTagPair, SIZE> dependency_tags_;
 };
 
 }
