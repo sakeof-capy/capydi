@@ -22,16 +22,19 @@ namespace capy::di
 namespace implementation_details_
 {
 
-template<CreationalConfig Decoratee>
-class Tag
+template<
+    CreationalConfig Decoratee,
+    typename TagComparator
+>
+class TagFilter
     : public DecoratableConfig<
-        Tag<Decoratee>
+        TagFilter<Decoratee, TagComparator>
     >
 {
 public:
-    constexpr explicit Tag(tag_t tag, Decoratee&& decoratee)
-        : tag_ { tag }
-        , decoratee_ { std::move(decoratee) }
+    constexpr explicit TagFilter(TagComparator&& comparator, Decoratee&& decoratee)
+        : decoratee_ { std::move(decoratee) }
+        , comparator_ { std::move(comparator) }
     {}
 
 public:
@@ -60,7 +63,7 @@ public:
 
         const tag_t input_tag = tag_input.value().tag.value();
 
-        if (this->tag_ != input_tag) [[unlikely]]
+        if (!this->comparator_(input_tag)) [[unlikely]]
         {
             return std::unexpected { Error::TAG_MISMATCH };
         }
@@ -81,20 +84,26 @@ public:
     }
 
 private:
-    tag_t tag_;
     Decoratee decoratee_;
+    TagComparator comparator_;
 };
 
-template<ChainableConfig Decoratee>
-class TagChainable
+template<
+    ChainableConfig Decoratee, 
+    typename TagComparator
+>
+class TagFilterChainable
     : public DecoratableConfig<
-        TagChainable<Decoratee>
+        TagFilterChainable<Decoratee, TagComparator>
     >
 {
 public:
-    constexpr explicit TagChainable(tag_t tag, Decoratee&& decoratee)
-        : tag_ { tag }
-        , decoratee_ { std::move(decoratee) }
+    constexpr explicit TagFilterChainable(
+        TagComparator&& comparator, 
+        Decoratee&& decoratee
+    )
+        : decoratee_ { std::move(decoratee) }
+        , comparator_ { std::move(comparator) }
     {}
 
 public:
@@ -122,7 +131,7 @@ public:
         {
             const TagInput& tag_input = std::get<TagInput>(context.input);
 
-            if (tag_input.tag.value() != this->tag_)
+            if (!this->comparator_(tag_input.tag.value()))
             {
                 return ResultType {
                     decoratee
@@ -141,8 +150,8 @@ public:
 
 
 private:
-    tag_t tag_;
     Decoratee decoratee_;
+    TagComparator comparator_;
 };
 
 }
@@ -150,23 +159,58 @@ private:
 struct Tag
 {
     template<CreationalConfig Decoratee>
-    static constexpr implementation_details_::Tag<Decoratee> decorate(
+    static constexpr auto decorate(
         Decoratee&& decoratee, 
         tag_t tag
     ) {
-        return implementation_details_::Tag<Decoratee> {
-            tag,
+        return implementation_details_::TagFilter {
+            [tag](const tag_t& inner_tag) { return inner_tag == tag; },
             std::forward<Decoratee>(decoratee)
         };
     }
 
     template<ChainableConfig Decoratee>
-    static constexpr implementation_details_::TagChainable<Decoratee> decorate_chainable(
+    static constexpr auto decorate_chainable(
         Decoratee&& decoratee, 
         tag_t tag
     ) {
-        return implementation_details_::TagChainable<Decoratee> {
-            tag,
+        return implementation_details_::TagFilterChainable {
+            [tag](const tag_t& inner_tag) { return inner_tag == tag; },
+            std::forward<Decoratee>(decoratee)
+        };
+    }
+};
+
+struct TagFilter
+{
+    template<
+        CreationalConfig Decoratee,
+        typename TagComparator
+    >
+    static constexpr implementation_details_::TagFilter<Decoratee, TagComparator> 
+        decorate(
+            Decoratee&& decoratee, 
+            TagComparator&& tag_comparator
+        ) 
+    {
+        return implementation_details_::TagFilter {
+            std::move(tag_comparator),
+            std::forward<Decoratee>(decoratee)
+        };
+    }
+
+    template<
+        ChainableConfig Decoratee, 
+        typename TagComparator
+    >
+    static constexpr implementation_details_::TagFilterChainable<Decoratee, TagComparator> 
+        decorate_chainable(
+            Decoratee&& decoratee, 
+            TagComparator&& tag_comparator
+        ) 
+    {
+        return implementation_details_::TagFilterChainable {
+            std::move(tag_comparator),
             std::forward<Decoratee>(decoratee)
         };
     }

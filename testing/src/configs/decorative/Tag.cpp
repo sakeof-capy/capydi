@@ -126,20 +126,3 @@ TEST_CASE("singleton/multiple_tags")
 
     REQUIRE(root.sum() == RootSpine::IDENTIFIER);
 }
-
-/*
-
-capy::meta::MetaMap<
-    capy::meta::KVPair<
-        capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 
-        std::array<capy::meta::Pack<capy::di::spine_leaf_3::Spine1>, 0> 
-    >, 
-    capy::meta::KVPair<
-        capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 
-        std::array<capy::meta::Pack<const capy::di::spine_leaf_3::Spine1>, 0> 
-    >
->
-
-
-
-*/
