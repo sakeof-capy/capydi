@@ -14,7 +14,7 @@ namespace implementation_details_
 {
 
 template<CreationalConfig Decoratee, typename Interface>
-    requires std::derived_from<central_type_t<Decoratee>, Interface>
+    // requires std::derived_from<central_type_t<Decoratee>, Interface>
 class AsInterface
     : public DecoratableConfig<
         AsInterface<Decoratee, Interface>
